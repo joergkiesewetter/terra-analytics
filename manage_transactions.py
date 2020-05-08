@@ -1,16 +1,18 @@
 import os
+import traceback
 from datetime import datetime
 
 import config
 from provider.terra import Terra
 from util import logging
 
-BASE_DIRECTORY = '/terra/raw/transactions'
+# structure: /data/raw/terra/transactions/<type>/<date>.csv
+BASE_DIRECTORY = '/data/raw/terra/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
-
 token = dict()
+
 
 def update_token_transactions():
     """
@@ -150,7 +152,7 @@ def update_token_transactions():
                                      transaction['moniker'],
                                      transaction['website'],
                                      transaction['identity'],
-                                     transaction['commission_rate'],
+                                     transaction['commission_rate'] or '-1',
                                      transaction.get('min_self_delegation') or '',
                                     ])
 
@@ -179,12 +181,14 @@ def update_token_transactions():
                                      transaction['txhash'],
                                      str(transaction['exchange_rate']),
                                      transaction['currency'],
+                                     transaction['feeder'],
                                     ])
 
             elif type == 'oracle/MsgExchangeRatePrevote':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
+                                     transaction['feeder'],
                                      transaction['currency'],
                                     ])
 
@@ -353,37 +357,49 @@ def _get_last_transaction():
     return last_timestamp, last_block, last_hash
 
 
-def get_first_transaction_timestamp(symbol):
+def get_first_transaction_timestamp():
 
     last_file_timestamp = None
 
-    dir = os.path.join(BASE_DIRECTORY, symbol)
+    directories = [f for f in os.listdir(BASE_DIRECTORY) if os.path.isdir(os.path.join(BASE_DIRECTORY, f))]
 
-    files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
+    for dir in directories:
 
-    # get the file with the highest timestamp
-    for file in files:
-        filename = file.split('.')[0]
+        dir = os.path.join(BASE_DIRECTORY, dir)
 
-        timestamp = datetime.strptime(filename, '%Y-%m-%d')
+        files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
 
-        if not last_file_timestamp or timestamp < last_file_timestamp:
-            last_file_timestamp = timestamp
+        # get the file with the highest timestamp
+        for file in files:
+            filename = file.split('.')[0]
+
+            timestamp = datetime.strptime(filename, '%Y-%m-%d')
+
+            if not last_file_timestamp or timestamp < last_file_timestamp:
+                last_file_timestamp = timestamp
 
     return last_file_timestamp
 
 
-def get_transaction_data(symbol, date):
+def get_transaction_data(date, type_filter=None):
+    return_data = []
 
-    try:
-        with open(os.path.join(BASE_DIRECTORY, symbol, date.strftime('%Y-%m-%d') + '.csv'), 'rt') as file:
+    directories = [f for f in os.listdir(BASE_DIRECTORY) if os.path.isdir(os.path.join(BASE_DIRECTORY, f))]
 
-            return_data = []
+    for dir in directories:
 
+        if type_filter and dir not in type_filter:
+            continue
 
-            for line in file:
-                return_data.append(line.split(','))
+        try:
+            with open(os.path.join(BASE_DIRECTORY, dir, date.strftime('%Y-%m-%d') + '.csv'), 'rt') as file:
 
-            return return_data
-    except:
-        return []
+                for line in file:
+                    data = line.strip().split(',')
+                    data.insert(0, dir)
+                    return_data.append(data)
+        except:
+            traceback.print_exc()
+
+    return return_data
+

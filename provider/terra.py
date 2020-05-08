@@ -1,5 +1,7 @@
 import math
 import re
+import time
+import traceback
 from datetime import datetime
 
 import requests
@@ -8,6 +10,7 @@ import config
 from util import logging
 
 TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
+# TERRA_BASE_URL = 'http://:1317/txs'
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
@@ -17,16 +20,28 @@ class Terra:
     @staticmethod
     def get_transaction(block: int):
         url = TERRA_BASE_URL + '?' + \
-              'chainId=columbus-3' + \
               '&limit=100' + \
               '&block=' + str(block)
+        # when requesting the terracli rest-server, use:
+        # 'tx.height=' + str(block)
 
         # request the first page
-        response = requests.get(url + '&page=1')
+        response = None
+        while not response:
+            try:
+                response = requests.get(url + '&page=1')
+            except:
+                traceback.print_exc()
+
+        while response.status_code != 200:
+            log.warning(response.status_code)
+            response = requests.get(url + '&page=1')
+            time.sleep(1)
+
         loaded_json = response.json()
 
-        total_count = loaded_json['totalCnt']
-        limit = loaded_json['limit']
+        total_count = int(loaded_json.get('total_count') or loaded_json.get('totalCnt'))
+        limit = int(loaded_json['limit'])
 
         raw_transactions = loaded_json['txs']
 
@@ -34,6 +49,12 @@ class Terra:
         for i in range(2, int(math.ceil(total_count/limit)) + 1):
 
             response = requests.get(url + '&page=' + str(i))
+
+            while response.status_code != 200:
+                log.warning(response.status_code)
+                response = requests.get(url + '&page=' + str(i))
+                time.sleep(1)
+
             loaded_json = response.json()
             raw_transactions.extend(loaded_json['txs'])
 
@@ -73,8 +94,11 @@ class Terra:
                 tax = log_entry['log']['tax']
 
                 if tax and len(tax) > 0:
-                    tax_amount = int(tax[:-4])
-                    tax_currency = tax[-4:]
+                    for tax_entry in tax.split(','):
+                        # TODO store all tax elements, not only the last
+                        if float(tax_entry[:-4]) > 0:
+                            tax_amount = float(tax_entry[:-4])
+                            tax_currency = tax_entry[-4:]
 
             #
             # get every transaction
@@ -201,7 +225,7 @@ class Terra:
                         'type': m['type'],
                         'pubkey': m['value']['pubkey'],
                         'amount': m['value']['value']['amount'],
-                        'currency': m['value']['value']['currency'],
+                        'currency': m['value']['value']['denom'],
                         'commission_rate': m['value']['commission']['rate'],
                         'commission_max_rate': m['value']['commission']['max_rate'],
                         'commission_max_change_rate': m['value']['commission']['max_change_rate'],
@@ -222,6 +246,7 @@ class Terra:
                         'type': m['type'],
                         'exchange_rate': float(m['value']['exchange_rate']),
                         'currency': m['value']['denom'],
+                        'feeder': m['value']['feeder'],
                     })
 
                 elif m['type'] == 'oracle/MsgExchangeRatePrevote':
@@ -231,6 +256,7 @@ class Terra:
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
                         'currency': m['value']['denom'],
+                        'feeder': m['value']['feeder'],
                     })
 
                 elif m['type'] == 'oracle/MsgDelegateFeedConsent':
