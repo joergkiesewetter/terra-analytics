@@ -5,8 +5,8 @@ import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
-# structure /data/raw/terra/stats_daily_payments/<token>.csv
-STORE_DAILY_PAYMENTS_DIRECTORY = '/data/raw/terra/stats_daily_payments'
+# structure /data/raw/terra/stats_daily_transaction/<type>/<token>.csv
+STORE_DAILY_TRANSACTIONS_DIRECTORY = '/data/raw/terra/stats_daily_transactions'
 
 # structure /data/raw/terra/stats_daily_address_payments/<token>/<date>.csv
 STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/data/raw/terra/stats_daily_address_payments'
@@ -14,11 +14,11 @@ STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/data/raw/terra/stats_daily_address_pa
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
 
-def calculate_daily_payment_data():
+def calculate_daily_transaction_data():
     # symbol = token['symbol']
     # symbol_file = STORE_DIRECTORY + symbol
 
-    os.makedirs(STORE_DAILY_PAYMENTS_DIRECTORY, exist_ok=True)
+    os.makedirs(STORE_DAILY_TRANSACTIONS_DIRECTORY, exist_ok=True)
 
     max_time = datetime.utcnow()
     max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -29,7 +29,7 @@ def calculate_daily_payment_data():
     date_last_processed = _get_last_processed_date()
     date_to_process = max(date_to_process, date_last_processed + timedelta(days=1))
 
-    log.debug('calculate: total amount of coins per coin')
+    log.debug('calculate: total amount of transactions per coin per type')
 
     # TODO remove all lines from STORE_DAILY_PAYMENTS_DIRECTORY which are in the future from date_to_process
     # TODO remove all files from STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY which are in the future from date_to_process
@@ -40,11 +40,11 @@ def calculate_daily_payment_data():
     # with open(symbol_file, 'a') as file:
     while not stop_processing:
 
-        log.debug('analysing payment data for ' + date_to_process.strftime('%Y-%m-%d'))
+        log.debug('analysing transaction data for ' + date_to_process.strftime('%Y-%m-%d'))
 
-        data = get_transaction_data(date_to_process, type_filter=['bank_MsgMultiSend', 'bank_MsgSend'])
+        data = get_transaction_data(date_to_process)
 
-        token = dict()
+        types = dict()
 
         for datum in data:
 
@@ -52,57 +52,72 @@ def calculate_daily_payment_data():
             block = datum[1]
             timestamp = datum[2]
             tx_hash = datum[3]
-            currency = datum[5]
 
-            if currency not in token.keys():
-                token[currency] = {
-                    # 'file': open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, currency + '.csv'), 'a'),
-                    'total_amount': 0,
-                    'payment_count': 0,
-                    'active_users': dict(),
-                    # 'filename': None
+            if type not in types.keys():
+                types[type] = {
+                    'count': 0,
+                    'currencies': dict(),
                 }
 
-            amount = int(datum[4])
-            from_address = datum[6]
-            to_address = datum[7]
-            tax_amount = int(datum[8])
-            # tax_currency = datum[9]
+            currency = None
 
-            token[currency]['payment_count'] += 1
-            token[currency]['total_amount'] += amount
+            if type == 'bank_MsgMultiSend':
+                currency = datum[5]
+            elif type == 'bank_MsgSend':
+                currency = datum[5]
+            elif type == 'distribution_MsgWithdrawDelegationReward':
+                currency = None
+            elif type == 'distribution_MsgWithdrawValidatorCommission':
+                currency = None
+            elif type == 'gov_MsgDeposit':
+                currency = datum[7]
+            elif type == 'gov_MsgSubmitProposal':
+                currency = None
+            elif type == 'market_MsgSwap':
+                currency = None
+            elif type == 'oracle_MsgDelegateFeedConsent':
+                currency = None
+            elif type == 'oracle_MsgExchangeRatePrevote':
+                currency = datum[5]
+            elif type == 'oracle_MsgExchangeRateVote':
+                currency = datum[5]
+            elif type == 'staking_MsgCreateValidator':
+                currency = datum[5]
+            elif type == 'staking_MsgDelegate':
+                currency = datum[7]
+            elif type == 'staking_MsgEditValidator':
+                currency = None
 
-            if from_address not in token[currency]['active_users'].keys():
-                token[currency]['active_users'][from_address] = {
-                    'total_amount': 0,
-                    'payment_count': 0,
+            if currency and currency not in types[type]['currencies']:
+                types[type]['currencies'][currency] = {
+                    'count': 0,
                 }
 
-            token[currency]['active_users'][from_address]['total_amount'] += amount
-            token[currency]['active_users'][from_address]['payment_count'] += 1
+            if currency:
+                types[type]['currencies'][currency]['count'] += 1
+            else:
+                types[type]['count'] += 1
 
-        # print(token)
+        print(types)
 
-        for currency in token.keys():
+        for type in types.keys():
 
-            with open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, currency + '.csv'), 'a') as file:
-                file.write(','.join([date_to_process.strftime('%Y-%m-%d'),
-                                     str(token[currency]['total_amount']),
-                                     str(token[currency]['payment_count']),
-                                    ]) + '\n')
+            os.makedirs(os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, type), exist_ok=True)
 
-            os.makedirs(os.path.join(STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY, currency), exist_ok=True)
+            if len(types[type]['currencies']) > 0:
 
-            with open(os.path.join(STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY,
-                                   currency,
-                                   date_to_process.strftime('%Y-%m-%d') + '.csv'), 'a') as file:
+                for currency in types[type]['currencies']:
 
-                for address in token[currency]['active_users'].keys():
-                    file.write(','.join([address,
-                                         str(token[currency]['active_users'][address]['total_amount']),
-                                         str(token[currency]['active_users'][address]['payment_count']),
-                                        ]) + '\n')
-
+                    with open(os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, type, currency + '.csv'), 'a') as file:
+                        file.write(','.join([date_to_process.strftime('%Y-%m-%d'),
+                                             str(types[type]['currencies'][currency]['count']),
+                                            ]) + '\n')
+            else:
+                with open(os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, type, 'default.csv'), 'a') as file:
+                    file.write(','.join(
+                        [date_to_process.strftime('%Y-%m-%d'),
+                         str(types[type]['count']),
+                         ]) + '\n')
 
         date_to_process += timedelta(days=1)
 
@@ -174,22 +189,29 @@ def calculate_daily_payment_data():
 
 
 def _get_last_processed_date():
-    files = [f for f in os.listdir(STORE_DAILY_PAYMENTS_DIRECTORY) if os.path.isfile(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, f))]
+    directories = [f for f in os.listdir(STORE_DAILY_TRANSACTIONS_DIRECTORY) if
+             os.path.isdir(os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
 
-    # get the file with the highest timestamp
-    for file in files:
-        symbol_file = os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, file)
+    for directory in directories:
 
-        with open(symbol_file, 'r') as file:
+        target_dir = os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, directory)
 
-            for line in file:
-                line_parts = line.split(',')
+        files = [f for f in os.listdir(target_dir) if os.path.isfile(os.path.join(target_dir, f))]
 
-                this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+        # get the file with the highest timestamp
+        for file in files:
+            symbol_file = os.path.join(target_dir, file)
 
-                last_file_timestamp = max(last_file_timestamp, this_timestamp)
+            with open(symbol_file, 'r') as file:
+
+                for line in file:
+                    line_parts = line.split(',')
+
+                    this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+
+                    last_file_timestamp = max(last_file_timestamp, this_timestamp)
 
     return last_file_timestamp
 

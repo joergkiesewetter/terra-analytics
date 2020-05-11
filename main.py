@@ -1,5 +1,6 @@
 import config
 from calculate_daily_payment_data import calculate_daily_payment_data
+from calculate_daily_transaction_data import calculate_daily_transaction_data
 from manage_transactions import update_token_transactions
 from util import logging
 
@@ -8,10 +9,12 @@ log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 if __name__ == "__main__":
 
     log.info('fetching new token transactions')
-    update_token_transactions()
+    # update_token_transactions()
 
     # structure ./raw/stats_daily_payments/<token>.csv
     calculate_daily_payment_data()
+
+    calculate_daily_transaction_data()
 
     # structure ./raw/stats_total_amount_of_coins/<token>.csv
     # calculate_total_amount_of_coins()
@@ -20,13 +23,13 @@ if __name__ == "__main__":
     # - velocity of currency per day
     # * - daily payments - total amount
     # * - daily payments - count
-    # - daily payment - average
-    # - daily transactions by type
+    # * - daily payment - average
+    # * - daily transactions by type
     # - daily new users (no transaction before)
-    # - daily active users (accounts with at least 1 transaction on this day)
-    #* - daily payments (count) by address
-    #* - daily payments (amount) by address
     # - user count total
+    # * - daily active users (accounts with at least 1 transaction on this day)
+    # * - daily payments (count) by address
+    # * - daily payments (amount) by address
     # user_count/<currency>.csv
     # <date>,<count>
     #  - rolling retention

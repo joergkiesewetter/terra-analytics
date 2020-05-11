@@ -392,7 +392,12 @@ def get_transaction_data(date, type_filter=None):
             continue
 
         try:
-            with open(os.path.join(BASE_DIRECTORY, dir, date.strftime('%Y-%m-%d') + '.csv'), 'rt') as file:
+            filename = os.path.join(BASE_DIRECTORY, dir, date.strftime('%Y-%m-%d') + '.csv')
+
+            if not os.path.isfile(filename):
+                continue
+
+            with open(filename, 'rt') as file:
 
                 for line in file:
                     data = line.strip().split(',')
