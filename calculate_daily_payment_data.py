@@ -1,15 +1,16 @@
 import os
+import traceback
 from datetime import datetime, timedelta
 
 import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
-# structure /data/raw/terra/stats_daily_payments/<token>.csv
-STORE_DAILY_PAYMENTS_DIRECTORY = '/data/raw/terra/stats_daily_payments'
+# structure /terra-data/raw/stats_daily_payments/<token>.csv
+STORE_DAILY_PAYMENTS_DIRECTORY = '/terra-data/raw/stats_daily_payments'
 
-# structure /data/raw/terra/stats_daily_address_payments/<token>/<date>.csv
-STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/data/raw/terra/stats_daily_address_payments'
+# structure /terra-data/raw/stats_daily_address_payments/<token>/<date>.csv
+STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/terra-data/raw/stats_daily_address_payments'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -103,7 +104,6 @@ def calculate_daily_payment_data():
                                          str(token[currency]['active_users'][address]['payment_count']),
                                         ]) + '\n')
 
-
         date_to_process += timedelta(days=1)
 
         if date_to_process >= max_time:
@@ -194,15 +194,36 @@ def _get_last_processed_date():
     return last_file_timestamp
 
 
-# def _get_data_to_process(date):
-#     try:
-#         with open(os.path.join(STORE_DIRECTORY, symbol, date.strftime('%Y-%m-%d') + '.csv'), 'rt') as file:
-#
-#             return_data = []
-#
-#             for line in file:
-#                 return_data.append(line.split(';'))
-#
-#             return return_data
-#     except:
-#         return []
+def get_data_for_date(date):
+    files = [f for f in os.listdir(STORE_DAILY_PAYMENTS_DIRECTORY) if
+             os.path.isfile(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, f))]
+
+    return_data = {}
+
+    for filename in files:
+        try:
+
+            token_name = filename.split('.')[0]
+
+            with open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, filename)) as file:
+
+                for line in file:
+
+                    if len(line) <= 0:
+                        continue
+
+                    line_parts = line.split(',')
+                    line_date = datetime.strptime(line_parts[0], '%Y-%m-%d')
+
+                    if line_date == date:
+                        return_data[token_name] = {
+                            'total_amount': int(line_parts[1]),
+                            'payment_count': int(line_parts[2]),
+                        }
+                        break
+
+        except:
+            log.debug('error fetching data')
+            traceback.print_exc()
+
+    return return_data

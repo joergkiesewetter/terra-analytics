@@ -9,8 +9,9 @@ import requests
 import config
 from util import logging
 
-TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
-# TERRA_BASE_URL = 'http://:1317/txs'
+# TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
+TERRA_BASE_URL = 'http://116.202.245.125:1317/txs'
+# TERRA_BASE_URL = 'http://0.0.0.0:1317/txs'
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
@@ -21,9 +22,10 @@ class Terra:
     def get_transaction(block: int):
         url = TERRA_BASE_URL + '?' + \
               '&limit=100' + \
-              '&block=' + str(block)
+              '&tx.height=' + str(block)
+        # '&block=' + str(block) + \
         # when requesting the terracli rest-server, use:
-        # 'tx.height=' + str(block)
+
 
         # request the first page
         response = None
@@ -132,14 +134,21 @@ class Terra:
                         if event['type'] == 'submit_proposal':
                             proposal_id = event['attributes'][0]['value']
 
+                    if len(m['value']['initial_deposit']) > 0:
+                        init_deposit_amount = m['value']['initial_deposit'][0]['amount']
+                        init_deposit_currency = m['value']['initial_deposit'][0]['denom']
+                    else:
+                        init_deposit_amount = 0
+                        init_deposit_currency = ''
+
                     final_transactions.append({
                         'block': int(t['height']),
                         'txhash': t['txhash'],
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
                         'proposer': m['value']['proposer'],
-                        'init_deposit_amount': m['value']['initial_deposit'][0]['amount'],
-                        'init_deposit_currency': m['value']['initial_deposit'][0]['denom'],
+                        'init_deposit_amount':  init_deposit_amount,
+                        'init_deposit_currency': init_deposit_currency,
                         'proposal_id': proposal_id,
                         'proposal_title': m['value']['content']['value']['title'],
                         'proposal_text': m['value']['content']['value']['description'],

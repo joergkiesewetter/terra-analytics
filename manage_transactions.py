@@ -1,3 +1,4 @@
+import base64
 import os
 import traceback
 from datetime import datetime
@@ -6,8 +7,8 @@ import config
 from provider.terra import Terra
 from util import logging
 
-# structure: /data/raw/terra/transactions/<type>/<date>.csv
-BASE_DIRECTORY = '/data/raw/terra/transactions'
+# structure: /terra-data/raw/transactions/<type>/<date>.csv
+BASE_DIRECTORY = '/terra-data/raw/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -100,15 +101,19 @@ def update_token_transactions():
                                     ])
 
             elif type == 'gov/MsgSubmitProposal':
+
+                title_encoded = base64.b64encode(transaction['proposal_title'].encode('utf-8'))
+                text_encoded = base64.b64encode(transaction['proposal_text'].encode('utf-8'))
+
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
                                      transaction['proposer'],
-                                     transaction['init_deposit_amount'],
+                                     str(transaction['init_deposit_amount']),
                                      transaction['init_deposit_currency'],
                                      transaction['proposal_id'],
-                                     transaction['proposal_title'],
-                                     transaction['proposal_text'],
+                                     title_encoded.decode('utf-8'),
+                                     text_encoded.decode('utf-8'),
                                     ])
 
             elif type == 'gov/MsgDeposit':

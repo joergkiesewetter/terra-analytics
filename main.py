@@ -1,6 +1,10 @@
 import config
 from calculate_daily_payment_data import calculate_daily_payment_data
 from calculate_daily_transaction_data import calculate_daily_transaction_data
+from final_data_general import final_data_general
+from final_data_payments import final_data_payments
+from final_data_transactions import final_data_transactions
+from final_data_user import final_data_user
 from manage_transactions import update_token_transactions
 from util import logging
 
@@ -11,10 +15,22 @@ if __name__ == "__main__":
     log.info('fetching new token transactions')
     # update_token_transactions()
 
+    #
+    # calculate interim results
+    #
+
     # structure ./raw/stats_daily_payments/<token>.csv
     calculate_daily_payment_data()
 
     calculate_daily_transaction_data()
+
+    #
+    # calculate final results to use in the frontend
+    #
+    # final_data_general()
+    final_data_payments()
+    final_data_transactions()
+    final_data_user()
 
     # structure ./raw/stats_total_amount_of_coins/<token>.csv
     # calculate_total_amount_of_coins()
@@ -32,7 +48,8 @@ if __name__ == "__main__":
     # * - daily payments (amount) by address
     # user_count/<currency>.csv
     # <date>,<count>
-    #  - rolling retention
+    # - rolling retention
+    # - daily swap volume
 
     #     if token['source_exchange_rates'] == 'coin_gecko':
     #         source_coin_gecko.update_exchange_rates(token['symbol'])
