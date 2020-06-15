@@ -13,7 +13,7 @@ log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 if __name__ == "__main__":
 
     log.info('fetching new token transactions')
-    # update_token_transactions()
+    update_token_transactions()
 
     #
     # calculate interim results
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     # * - daily payments - count
     # * - daily payment - average
     # * - daily transactions by type
-    # - daily new users (no transaction before)
-    # - user count total
+    # * - daily new users (no transaction before)
+    # * - user count total
     # * - daily active users (accounts with at least 1 transaction on this day)
     # * - daily payments (count) by address
     # * - daily payments (amount) by address

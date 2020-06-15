@@ -181,9 +181,10 @@ class Terra:
                 elif m['type'] == 'market/MsgSwap':
 
                     ask_address = ''
-                    bid_address = ''
                     ask_amount = -1
                     ask_currency = ''
+
+                    bid_address = ''
                     bid_amount = -1
                     bid_currency = ''
 
@@ -195,8 +196,7 @@ class Terra:
                             ask_currency = m['value']['offer_coin']['denom']
 
                             bid_address = event['attributes'][0]['value']
-                            bid_amount = event['attributes'][0]['value'][:-4]
-                            bid_currency = event['attributes'][0]['value'][-4:]
+                            bid_amount, bid_currency = _split_amount_currency(event['attributes'][3]['value'])
 
                     final_transactions.append({
                         'block': int(t['height']),
@@ -320,3 +320,12 @@ class Terra:
                     log.warning('transaction type not known: ' + m['type'])
 
         return final_transactions
+
+
+# TODO make it better
+def _split_amount_currency(value):
+
+    if value.endswith('uluna'):
+        return value[:-5], value[-5:]
+    else:
+        return value[:-4], value[-4:]
