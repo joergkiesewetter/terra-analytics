@@ -87,20 +87,13 @@ class Terra:
             #
             tax_amount = 0
             tax_currency = ''
+            gas = 0
 
-            for log_entry in t['logs']:
-
-                if 'tax' not in log_entry['log']:
-                    continue
-
-                tax = log_entry['log']['tax']
-
-                if tax and len(tax) > 0:
-                    for tax_entry in tax.split(','):
-                        # TODO store all tax elements, not only the last
-                        if float(tax_entry[:-4]) > 0:
-                            tax_amount = float(tax_entry[:-4])
-                            tax_currency = tax_entry[-4:]
+            if 'fee' in t['tx']['value']:
+                if len(t['tx']['value']['fee']['amount']) > 0:
+                    tax_amount = int(t['tx']['value']['fee']['amount'][0]['amount'])
+                    tax_currency = t['tx']['value']['fee']['amount'][0]['denom']
+                gas = int(t['tx']['value']['fee']['gas'])
 
             #
             # get every transaction

@@ -65,6 +65,12 @@ def final_data_user():
             user_meta_data[currency]['daily'] = count_daily_active
 
         if not os.path.isfile(file_path):
+
+            #
+            # calculate retention data
+            #
+            retention_data = _calculate_retention_data(date_to_process)
+
             final_data = {}
 
             for currency in user_list.keys():
@@ -72,6 +78,7 @@ def final_data_user():
                     'total': len(user_list[currency]),
                     'new': user_meta_data.get(currency)['new'] if (currency in user_meta_data) else 0,
                     'daily': user_meta_data.get(currency)['daily'] if (currency in user_meta_data) else 0,
+                    'retention': retention_data.get(currency),
                 }
 
             if len(raw_data.keys()) > 0:
@@ -82,3 +89,52 @@ def final_data_user():
 
         if date_to_process >= max_time:
             stop_processing = True
+
+
+def _calculate_retention_data(start_date):
+
+    user_data_start_date = calculate_daily_transaction_data.get_user(start_date)
+
+    retention_data = {}
+
+    for currency in user_data_start_date:
+
+        if currency not in retention_data.keys():
+            retention_data[currency] = {}
+
+        for i in range(0, 29):
+
+            date1 = start_date - timedelta(days=i)
+            date1_string = date1.strftime('%Y-%m-%d')
+            user_data_date1 = calculate_daily_transaction_data.get_user(date1)
+
+            if currency not in user_data_date1.keys():
+                continue
+
+            user_list_date1 = [value['address'] for value in user_data_date1[currency]]
+
+            for j in range(i+1, 30):
+
+                date2 = start_date - timedelta(days=j)
+                date2_string = date2.strftime('%Y-%m-%d')
+                user_data_date2 = calculate_daily_transaction_data.get_user(date2)
+
+                if currency not in user_data_date2.keys():
+                    continue
+
+                user_list_date2 = [value['address'] for value in user_data_date2[currency]]
+                user_list_intersection = [value for value in user_list_date1 if value in user_list_date2]
+
+                if date2_string not in retention_data[currency].keys():
+                    retention_data[currency][date2_string] = []
+
+                retention_data[currency][date2_string].append({
+                    'day': (date1 - date2).days,
+                    'value': len(user_list_intersection) / len(user_list_date2)
+                })
+
+    return retention_data
+
+
+
+

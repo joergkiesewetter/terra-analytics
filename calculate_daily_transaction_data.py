@@ -43,16 +43,16 @@ def calculate_daily_transaction_data():
 
         log.debug('analysing transaction data for ' + date_to_process.strftime('%Y-%m-%d'))
 
-        data = get_transaction_data(date_to_process)
+        transactions = get_transaction_data(date_to_process)
 
         types = dict()
 
-        for datum in data:
+        for transaction in transactions:
 
-            type = datum[0]
-            block = datum[1]
-            timestamp = datum[2]
-            tx_hash = datum[3]
+            type = transaction[0]
+            block = transaction[1]
+            timestamp = transaction[2]
+            tx_hash = transaction[3]
 
             if type not in types.keys():
                 types[type] = {
@@ -63,15 +63,15 @@ def calculate_daily_transaction_data():
             currency = None
 
             if type == 'bank_MsgMultiSend':
-                currency = datum[5]
+                currency = transaction[5]
             elif type == 'bank_MsgSend':
-                currency = datum[5]
+                currency = transaction[5]
             elif type == 'distribution_MsgWithdrawDelegationReward':
                 currency = None
             elif type == 'distribution_MsgWithdrawValidatorCommission':
                 currency = None
             elif type == 'gov_MsgDeposit':
-                currency = datum[7]
+                currency = transaction[7]
             elif type == 'gov_MsgSubmitProposal':
                 currency = None
             elif type == 'market_MsgSwap':
@@ -79,13 +79,13 @@ def calculate_daily_transaction_data():
             elif type == 'oracle_MsgDelegateFeedConsent':
                 currency = None
             elif type == 'oracle_MsgExchangeRatePrevote':
-                currency = datum[5]
+                currency = transaction[5]
             elif type == 'oracle_MsgExchangeRateVote':
-                currency = datum[5]
+                currency = transaction[5]
             elif type == 'staking_MsgCreateValidator':
-                currency = datum[6]
+                currency = transaction[6]
             elif type == 'staking_MsgDelegate':
-                currency = datum[7]
+                currency = transaction[7]
             elif type == 'staking_MsgEditValidator':
                 currency = None
 

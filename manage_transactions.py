@@ -51,7 +51,7 @@ def update_token_transactions():
 
         log.debug('storing block ' + str(last_block))
 
-
+        # TODO add correct tracking for gas price and taxes
         for transaction in transactions:
 
             # last_batch_block = last_block

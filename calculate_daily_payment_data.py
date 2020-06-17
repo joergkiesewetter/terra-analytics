@@ -43,35 +43,38 @@ def calculate_daily_payment_data():
 
         log.debug('analysing payment data for ' + date_to_process.strftime('%Y-%m-%d'))
 
-        data = get_transaction_data(date_to_process, type_filter=['bank_MsgMultiSend', 'bank_MsgSend'])
+        transactions = get_transaction_data(date_to_process, type_filter=['bank_MsgMultiSend', 'bank_MsgSend'])
 
         token = dict()
 
-        for datum in data:
+        for transaction in transactions:
 
-            type = datum[0]
-            block = datum[1]
-            timestamp = datum[2]
-            tx_hash = datum[3]
-            currency = datum[5]
+            type = transaction[0]
+            block = transaction[1]
+            timestamp = transaction[2]
+            tx_hash = transaction[3]
+            currency = transaction[5]
+            tax_amount = transaction[8]
+            tax_currency = transaction[9]
 
             if currency not in token.keys():
                 token[currency] = {
                     # 'file': open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, currency + '.csv'), 'a'),
                     'total_amount': 0,
                     'payment_count': 0,
+                    'total_tax_amount': 0,
                     'active_users': dict(),
-                    # 'filename': None
                 }
 
-            amount = int(datum[4])
-            from_address = datum[6]
-            to_address = datum[7]
-            tax_amount = int(datum[8])
+            amount = int(transaction[4])
+            from_address = transaction[6]
+            to_address = transaction[7]
+            tax_amount = int(transaction[8])
             # tax_currency = datum[9]
 
             token[currency]['payment_count'] += 1
             token[currency]['total_amount'] += amount
+            token[currency]['total_tax_amount'] += tax_amount
 
             if from_address not in token[currency]['active_users'].keys():
                 token[currency]['active_users'][from_address] = {
@@ -87,9 +90,13 @@ def calculate_daily_payment_data():
         for currency in token.keys():
 
             with open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, currency + '.csv'), 'a') as file:
+
+                tax_rate = token[currency]['total_tax_amount'] / token[currency]['total_amount']
+
                 file.write(','.join([date_to_process.strftime('%Y-%m-%d'),
                                      str(token[currency]['total_amount']),
                                      str(token[currency]['payment_count']),
+                                     f"{tax_rate:.15f}",
                                     ]) + '\n')
 
             os.makedirs(os.path.join(STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY, currency), exist_ok=True)
