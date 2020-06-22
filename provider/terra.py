@@ -182,14 +182,16 @@ class Terra:
                     bid_currency = ''
 
                     for event in t['events']:
-                        if event['type'] == 'transfer':
+                        if event['type'] == 'swap':
 
-                            ask_address = event['attributes'][2]['value']
+                            ask_address = m['value']['trader']
                             ask_amount = m['value']['offer_coin']['amount']
                             ask_currency = m['value']['offer_coin']['denom']
 
-                            bid_address = event['attributes'][0]['value']
-                            bid_amount, bid_currency = _split_amount_currency(event['attributes'][3]['value'])
+                            bid_address = event['attributes'][1]['value']
+                            bid_amount, bid_currency = _split_amount_currency(event['attributes'][2]['value'])
+                            # TODO store swap_fee_amount and swap_fee_currency
+                            swap_fee_amount, swap_fee_currency = _split_amount_currency(event['attributes'][3]['value'])
 
                     final_transactions.append({
                         'block': int(t['height']),

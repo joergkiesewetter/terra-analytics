@@ -31,7 +31,7 @@ def final_data_payments():
 
     while not stop_processing:
 
-        log.debug('creating final data for ' + date_to_process.strftime('%Y-%m-%d'))
+        log.debug('creating final payment data for ' + date_to_process.strftime('%Y-%m-%d'))
 
         # Amount
         # Count

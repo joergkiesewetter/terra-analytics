@@ -1,5 +1,6 @@
 import config
 from calculate_daily_payment_data import calculate_daily_payment_data
+from calculate_daily_retention_data import calculate_daily_retention_data
 from calculate_daily_transaction_data import calculate_daily_transaction_data
 from final_data_general import final_data_general
 from final_data_payments import final_data_payments
@@ -24,19 +25,23 @@ if __name__ == "__main__":
 
     calculate_daily_transaction_data()
 
+    calculate_daily_retention_data()
+
     #
     # calculate final results to use in the frontend
     #
     # final_data_general()
-    # final_data_payments()
-    # final_data_transactions()
-    # final_data_user()
+    final_data_payments()
+    final_data_transactions()
+    final_data_user()
 
     # structure ./raw/stats_total_amount_of_coins/<token>.csv
     # calculate_total_amount_of_coins()
 
     # - total amount of coins
     # - velocity of currency per day
+    # -- M0: circulating supply
+    # -- M1: including everything on saving accounts
     # * - daily payments - total amount
     # * - daily payments - count
     # * - daily payment - average
