@@ -85,6 +85,9 @@ def update_token_transactions():
 
                 token[type]['file'] = open(os.path.join(token[type]['directory'], token[type]['filename']), 'a')
 
+            # TODO message type cosmos/MsgUnjail (see block 806047)
+            # TODO message type staking/MsgUndelegate (see block 800156)
+
             if type == 'distribution/MsgWithdrawDelegationReward':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),

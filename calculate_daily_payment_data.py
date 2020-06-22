@@ -70,7 +70,7 @@ def calculate_daily_payment_data():
             from_address = transaction[6]
             to_address = transaction[7]
             tax_amount = int(transaction[8])
-            # tax_currency = datum[9]
+            tax_currency = transaction[9]
 
             token[currency]['payment_count'] += 1
             token[currency]['total_amount'] += amount

@@ -6,6 +6,7 @@ from final_data_general import final_data_general
 from final_data_payments import final_data_payments
 from final_data_transactions import final_data_transactions
 from final_data_user import final_data_user
+from manage_realized_market_capitalization import update_realized_market_capitalization
 from manage_transactions import update_token_transactions
 from util import logging
 
@@ -15,6 +16,7 @@ if __name__ == "__main__":
 
     log.info('fetching new token transactions')
     # update_token_transactions()
+    update_realized_market_capitalization()
 
     #
     # calculate interim results
@@ -40,8 +42,8 @@ if __name__ == "__main__":
 
     # - total amount of coins
     # - velocity of currency per day
-    # -- M0: circulating supply
-    # -- M1: including everything on saving accounts
+    # see https://www.investopedia.com/articles/investing/091814/what-bitcoins-intrinsic-value.asp
+    # -- M1: circulating supply
     # * - daily payments - total amount
     # * - daily payments - count
     # * - daily payment - average
