@@ -50,6 +50,9 @@ def final_data_general():
 
                 market_data = calculate_market_data.get_data(symbol, date_to_process)
 
+                if not market_data:
+                    return
+
                 final_data[symbol]['amount_of_coins'] = market_data['circulating_supply']
                 final_data[symbol]['velocity_m1'] = payment_data[symbol]['total_amount'] / market_data['circulating_supply']
 

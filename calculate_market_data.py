@@ -137,7 +137,7 @@ def _analyse_data(symbol, data, date_to_process):
 
             # calculate number of coins never traded after market entry
             if int(coin_data[0]) < market_entry_date.timestamp():
-                return_data['not_moved_coins'] += coin_data[1]
+                return_data['not_moved_coins'] += int(coin_data[1])
 
             # calculate total realized market cap
             amount_coins = coin_data[1]
@@ -156,8 +156,9 @@ def _analyse_data(symbol, data, date_to_process):
         # if coin_data[1] > 1e20:
             return_data['num_holder'] += 1
 
-    return_data['not_moved_coins'] /= pow(10, 9)
-    return_data['coins_older_1y'] /= pow(10, 9)
+    # return_data['circulating_supply'] /= pow(10, 9)
+    # return_data['not_moved_coins'] /= pow(10, 9)
+    # return_data['coins_older_1y'] /= pow(10, 9)
     return_data['exchange_rate'] = exchange_rate
     return_data['market_cap'] = return_data['exchange_rate'] * return_data['circulating_supply']
 
@@ -195,12 +196,12 @@ def get_data(symbol: str, date: datetime):
             if line_split[0] == date_string:
                 return {
                     'date': date,
-                    'circulating_supply': int(line_split[1]),
-                    'not_moved_coins': int(line_split[2]),
+                    'circulating_supply': float(line_split[1]),
+                    'not_moved_coins': float(line_split[2]),
                     'market_cap': float(line_split[3]),
                     'realized_market_cap': float(line_split[4]),
                     'mvrv': float(line_split[5]),
-                    'coins_older_1y': int(line_split[6]),
+                    'coins_older_1y': float(line_split[6]),
                     'num_holder': int(line_split[7]),
                     'exchange_rate': float(line_split[8]),
                 }

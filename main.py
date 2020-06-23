@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     log.info('fetching new token transactions')
     # update_token_transactions()
-    update_realized_market_capitalization()
+    # update_realized_market_capitalization()
 
     #
     # calculate interim results
