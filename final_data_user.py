@@ -41,6 +41,9 @@ def final_data_user():
         # Total
         # New
         # Daily Active
+        # retention 7d
+        # retention 14d
+        # retention 30d
 
         file_path = os.path.join(STORE_FINAL_DATA_USER, date_to_process.strftime('%Y-%m-%d') + '.json')
         raw_data = calculate_daily_transaction_data.get_user(date_to_process)

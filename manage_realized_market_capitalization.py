@@ -206,25 +206,42 @@ def _save_state(date_to_process, state):
                     file.write(key + ';' + str(value['balance']) + ';' + json.dumps(value['data']) + '\n')
 
 
-def get_first_data_timestamp():
+def get_first_data_timestamp(token):
 
     last_file_timestamp = None
 
-    directories = [f for f in os.listdir(STORE_REALIZED_MARKET_CAP_DATA) if os.path.isdir(os.path.join(STORE_REALIZED_MARKET_CAP_DATA, f))]
+    root_directory = os.path.join(STORE_REALIZED_MARKET_CAP_DATA, token)
 
-    for dir in directories:
+    files = [f for f in os.listdir(root_directory) if os.path.isfile(os.path.join(root_directory, f))]
 
-        dir = os.path.join(STORE_REALIZED_MARKET_CAP_DATA, dir)
+    # get the file with the highest timestamp
+    for file in files:
+        filename = file.split('.')[0]
 
-        files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
+        timestamp = datetime.strptime(filename, '%Y-%m-%d')
 
-        # get the file with the highest timestamp
-        for file in files:
-            filename = file.split('.')[0]
-
-            timestamp = datetime.strptime(filename, '%Y-%m-%d')
-
-            if not last_file_timestamp or timestamp < last_file_timestamp:
-                last_file_timestamp = timestamp
+        if not last_file_timestamp or timestamp < last_file_timestamp:
+            last_file_timestamp = timestamp
 
     return last_file_timestamp
+
+
+def get_data(date, token):
+    try:
+        with open(os.path.join(STORE_REALIZED_MARKET_CAP_DATA, token, date.strftime('%Y-%m-%d') + '.csv'), 'rt') as file:
+
+            return_data = []
+
+            for line in file:
+                return_data.append(line.split(';'))
+
+            for datum in return_data:
+                datum[2] = json.loads(datum[2])
+
+            return return_data
+    except:
+        return []
+
+
+def get_token_list():
+    return [f for f in os.listdir(STORE_REALIZED_MARKET_CAP_DATA) if os.path.isdir(os.path.join(STORE_REALIZED_MARKET_CAP_DATA, f))]

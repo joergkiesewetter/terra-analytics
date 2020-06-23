@@ -2,6 +2,7 @@ import config
 from calculate_daily_payment_data import calculate_daily_payment_data
 from calculate_daily_retention_data import calculate_daily_retention_data
 from calculate_daily_transaction_data import calculate_daily_transaction_data
+from calculate_market_data import calculate_market_data
 from final_data_general import final_data_general
 from final_data_payments import final_data_payments
 from final_data_transactions import final_data_transactions
@@ -29,10 +30,12 @@ if __name__ == "__main__":
 
     calculate_daily_retention_data()
 
+    calculate_market_data()
+
     #
     # calculate final results to use in the frontend
     #
-    # final_data_general()
+    final_data_general()
     final_data_payments()
     final_data_transactions()
     final_data_user()
