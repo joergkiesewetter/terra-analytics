@@ -278,6 +278,10 @@ class Terra:
                     for input in m['value']['inputs']:
                         total_amount += int(input['coins'][0]['amount'])
 
+                    output_address = None
+                    if len(m['value']['outputs']) == 1:
+                        output_address = m['value']['outputs'][0]['address']
+
                     for i in range(len(m['value']['inputs'])):
 
                         amount = int(m['value']['inputs'][i]['coins'][0]['amount'])
@@ -289,14 +293,13 @@ class Terra:
                             'type': m['type'],
                             'amount': amount,
                             'currency': m['value']['inputs'][i]['coins'][0]['denom'],
-                            'from_address': m['value']['outputs'][i]['address'],
-                            'to_address': m['value']['inputs'][i]['address'],
-                            'tax_amount': int(round(tax_amount *  (amount / total_amount))),
+                            'from_address': m['value']['inputs'][i]['address'],
+                            'to_address': output_address or m['value']['outputs'][i]['address'],
+                            'tax_amount': int(round(tax_amount * (amount / total_amount))),
                             'tax_currency': tax_currency,
                         })
 
                 elif m['type'] == 'bank/MsgSend':
-
 
                     final_transactions.append({
                         'block': int(t['height']),
