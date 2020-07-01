@@ -38,6 +38,7 @@ def update_realized_market_capitalization():
         log.debug('processing realized market cap for: ' + str(date_to_process))
 
         for transaction in transactions:
+
             type = transaction[0]
             block = transaction[1]
             timestamp = transaction[2]
@@ -107,25 +108,14 @@ def update_realized_market_capitalization():
                         remaining_value -= from_amount
                         from_account['data'] = from_account['data'][1:]
 
-                from_balance = 0
-
-                for entry in from_account['data']:
-                    from_balance += int(entry[1])
-
-                from_account['balance'] = from_balance
+                from_account['balance'] = int(from_account['balance']) - max(0, amount)
 
             #
             # add transaction to the to-account
             #
 
             to_account['data'].append([timestamp, amount, price])
-
-            to_balance = 0
-
-            for entry in to_account['data']:
-                to_balance += int(entry[1])
-
-            to_account['balance'] = to_balance
+            to_account['balance'] = int(to_account['balance']) + amount
 
         #
         # all transactions are processed, saving state to a file
