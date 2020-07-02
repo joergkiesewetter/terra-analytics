@@ -39,6 +39,8 @@ def update_realized_market_capitalization():
 
         for transaction in transactions:
 
+            start_date = datetime.now()
+
             type = transaction[0]
             block = transaction[1]
             timestamp = transaction[2]
@@ -108,7 +110,10 @@ def update_realized_market_capitalization():
                         remaining_value -= from_amount
                         from_account['data'] = from_account['data'][1:]
 
-                from_account['balance'] = int(from_account['balance']) - max(0, amount)
+
+
+                from_account['balance'] = max(0, int(from_account['balance']) - amount)
+
 
             #
             # add transaction to the to-account
@@ -116,6 +121,9 @@ def update_realized_market_capitalization():
 
             to_account['data'].append([timestamp, amount, price])
             to_account['balance'] = int(to_account['balance']) + amount
+
+            end_date = datetime.now()
+            # print('calculation time: ' + str((end_date - start_date).total_seconds() * 1000))
 
         #
         # all transactions are processed, saving state to a file
