@@ -7,7 +7,7 @@ import config
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_FINAL_DATA_PAYMENTS = '/terra-data/final/payments'
+STORE_FINAL_DATA_PAYMENTS = '/terra-data/v2/final/payments'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

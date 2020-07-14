@@ -8,7 +8,7 @@ from provider.terra import Terra
 from util import logging
 
 # structure: /terra-data/raw/transactions/<type>/<date>.csv
-BASE_DIRECTORY = '/terra-data/raw/transactions'
+BASE_DIRECTORY = '/terra-data/v2/raw/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -233,8 +233,6 @@ def update_token_transactions():
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
-                                     str(transaction['tax_amount']),
-                                     transaction['tax_currency'],
                                     ])
 
             elif type == 'bank/MsgMultiSend':

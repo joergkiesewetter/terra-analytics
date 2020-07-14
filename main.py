@@ -16,8 +16,8 @@ log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 if __name__ == "__main__":
 
     log.info('fetching new token transactions')
-    # update_token_transactions()
-    # update_realized_market_capitalization()
+    update_token_transactions()
+    update_realized_market_capitalization()
 
     #
     # calculate interim results

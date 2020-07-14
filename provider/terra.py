@@ -9,8 +9,8 @@ import requests
 import config
 from util import logging
 
-TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
-# TERRA_BASE_URL = 'http://116.202.245.125:1317/txs'
+# TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
+TERRA_BASE_URL = 'http://116.202.245.125:1317/txs'
 # TERRA_BASE_URL = 'http://0.0.0.0:1317/txs'
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -22,8 +22,8 @@ class Terra:
     def get_transaction(block: int):
         url = TERRA_BASE_URL + '?' + \
               '&limit=100' + \
-              '&block=' + str(block)
-              # '&tx.height=' + str(block)
+              '&tx.height=' + str(block)
+        # '&block=' + str(block)
         # when requesting the terracli rest-server, use:
 
 
@@ -260,6 +260,8 @@ class Terra:
                         'identity': m['value']['Description']['identity'],
                         'commission_rate': m['value']['commission_rate'],
                         'min_self_delegation': m['value']['min_self_delegation'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'staking/MsgCreateValidator':
@@ -281,6 +283,8 @@ class Terra:
                         'min_self_delegation': m['value']['min_self_delegation'],
                         'delegator': m['value']['delegator_address'],
                         'validator': m['value']['validator_address'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'oracle/MsgExchangeRateVote':

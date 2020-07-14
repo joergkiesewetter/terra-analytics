@@ -6,7 +6,7 @@ import config
 import manage_realized_market_capitalization
 from util import logging
 
-STORE_MARKET_DATA = '/terra-data/raw/market_data/'
+STORE_MARKET_DATA = '/terra-data/v2/raw/market_data/'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
