@@ -9,8 +9,8 @@ import requests
 import config
 from util import logging
 
-# TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
-TERRA_BASE_URL = 'http://116.202.245.125:1317/txs'
+TERRA_BASE_URL = 'https://fcd.terra.dev/v1/txs'
+# TERRA_BASE_URL = 'http://116.202.245.125:1317/txs'
 # TERRA_BASE_URL = 'http://0.0.0.0:1317/txs'
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -22,8 +22,8 @@ class Terra:
     def get_transaction(block: int):
         url = TERRA_BASE_URL + '?' + \
               '&limit=100' + \
-              '&tx.height=' + str(block)
-        # '&block=' + str(block) + \
+              '&block=' + str(block)
+              # '&tx.height=' + str(block)
         # when requesting the terracli rest-server, use:
 
 
@@ -101,6 +101,14 @@ class Terra:
             for m in t['tx']['value']['msg']:
 
                 if m['type'] == 'distribution/MsgWithdrawDelegationReward':
+
+                    if len(t['logs'][0]['events'][0]['attributes']) == 4:
+                        reward_from = t['logs'][0]['events'][0]['attributes'][0]['value']
+                        delegation_reward = t['logs'][0]['events'][1]['attributes'][1]['value'].replace(',', ';')
+                    else:
+                        reward_from = ''
+                        delegation_reward = '0uluna'
+
                     final_transactions.append({
                         'block': int(t['height']),
                         'txhash': t['txhash'],
@@ -108,6 +116,10 @@ class Terra:
                         'type': m['type'],
                         'delegator': m['value']['delegator_address'],
                         'validator': m['value']['validator_address'],
+                        'reward_from': reward_from,
+                        'delegation_reward': delegation_reward,
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'distribution/MsgWithdrawValidatorCommission':
@@ -117,6 +129,8 @@ class Terra:
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
                         'validator': m['value']['validator_address'],
+                        'commission_from': t['logs'][1]['events'][0]['attributes'][0]['value'],
+                        'commission': t['logs'][1]['events'][1]['attributes'][1]['value'].replace(',', ';'),
                     })
 
                 elif m['type'] == 'gov/MsgSubmitProposal':
@@ -145,6 +159,8 @@ class Terra:
                         'proposal_id': proposal_id,
                         'proposal_title': m['value']['content']['value']['title'],
                         'proposal_text': m['value']['content']['value']['description'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'gov/MsgDeposit':
@@ -157,6 +173,8 @@ class Terra:
                         'proposal_id': m['value']['proposal_id'],
                         'amount': m['value']['amount'][0]['amount'],
                         'currency': m['value']['amount'][0]['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'staking/MsgDelegate':
@@ -169,7 +187,23 @@ class Terra:
                         'validator': m['value']['validator_address'],
                         'amount': m['value']['amount']['amount'],
                         'currency': m['value']['amount']['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
+                elif m['type'] == 'staking/MsgUndelegate':
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'delegator': m['value']['delegator_address'],
+                        'validator': m['value']['validator_address'],
+                        'amount': m['value']['amount']['amount'],
+                        'currency': m['value']['amount']['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency, })
+
+                    print('message undelegate')
 
                 elif m['type'] == 'market/MsgSwap':
 
@@ -180,6 +214,9 @@ class Terra:
                     bid_address = ''
                     bid_amount = -1
                     bid_currency = ''
+
+                    swap_fee_amount = 0
+                    swap_fee_currency = 'uluna'
 
                     for event in t['events']:
                         if event['type'] == 'swap':
@@ -204,6 +241,10 @@ class Terra:
                         'bid_address': bid_address,
                         'bid_amount': bid_amount,
                         'bid_currency': bid_currency,
+                        'swap_fee_amount': swap_fee_amount,
+                        'swap_fee_currency': swap_fee_currency,
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'staking/MsgEditValidator':
@@ -251,6 +292,8 @@ class Terra:
                         'exchange_rate': float(m['value']['exchange_rate']),
                         'currency': m['value']['denom'],
                         'feeder': m['value']['feeder'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'oracle/MsgExchangeRatePrevote':
@@ -261,6 +304,8 @@ class Terra:
                         'type': m['type'],
                         'currency': m['value']['denom'],
                         'feeder': m['value']['feeder'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'oracle/MsgDelegateFeedConsent':
