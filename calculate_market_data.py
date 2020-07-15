@@ -187,7 +187,12 @@ def get_data(symbol: str, date: datetime):
 
     date_string = date.strftime('%Y-%m-%d')
 
-    with open(os.path.join(STORE_MARKET_DATA, symbol + '.csv')) as file:
+    file_path = os.path.join(STORE_MARKET_DATA, symbol + '.csv')
+
+    if not os.path.isfile(file_path):
+        return
+
+    with open(file_path) as file:
 
         for line in file:
 
