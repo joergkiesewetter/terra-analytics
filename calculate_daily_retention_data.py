@@ -64,7 +64,7 @@ def _calculate_retention_data(start_date):
 
         user_list_start_date = [value['address'] for value in user_data_start_date[currency]]
 
-        for i in range(1, 30):
+        for i in range(1, 31):
 
             date1 = start_date - timedelta(days=i)
             date1_string = date1.strftime('%Y-%m-%d')
