@@ -86,6 +86,7 @@ def update_token_transactions():
                 token[type]['file'] = open(os.path.join(token[type]['directory'], token[type]['filename']), 'a')
 
             # TODO message type cosmos/MsgUnjail (see block 806047)
+            # TODO message type staking/MsgBeginRedelegate (see block 2846428)
 
             if type == 'distribution/MsgWithdrawDelegationReward':
                 new_line = ','.join([str(transaction['block']),
@@ -150,6 +151,17 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
+            elif type == 'staking/MsgUndelegate':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['delegator'],
+                                     transaction['validator'],
+                                     transaction['amount'],
+                                     transaction['currency'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                ])
             elif type == 'market/MsgSwap':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
@@ -389,7 +401,6 @@ def _get_last_transaction():
                 last_timestamp = int(last_line[1])
                 last_block = int(last_line[0])
                 last_hash = last_line[2]
-
 
     return last_timestamp, last_block, last_hash
 
