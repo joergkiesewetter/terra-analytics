@@ -123,14 +123,26 @@ class Terra:
                     })
 
                 elif m['type'] == 'distribution/MsgWithdrawValidatorCommission':
+
+                    # TODO make the implementation better: respect the event type to find more complexe values
+                    try:
+                        commission_from = t['logs'][1]['events'][0]['attributes'][0]['value']
+                    except IndexError:
+                        commission_from = t['logs'][0]['events'][0]['attributes'][0]['value']
+
+                    try:
+                        commission = t['logs'][1]['events'][1]['attributes'][1]['value'].replace(',', ';')
+                    except IndexError:
+                        commission = t['logs'][0]['events'][1]['attributes'][1]['value'].replace(',', ';')
+
                     final_transactions.append({
                         'block': int(t['height']),
                         'txhash': t['txhash'],
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
                         'validator': m['value']['validator_address'],
-                        'commission_from': t['logs'][1]['events'][0]['attributes'][0]['value'],
-                        'commission': t['logs'][1]['events'][1]['attributes'][1]['value'].replace(',', ';'),
+                        'commission_from': commission_from,
+                        'commission': commission,
                     })
 
                 elif m['type'] == 'gov/MsgSubmitProposal':
