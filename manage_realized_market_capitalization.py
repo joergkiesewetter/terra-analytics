@@ -6,7 +6,7 @@ import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
-STORE_REALIZED_MARKET_CAP_DATA = '/terra-data/v2/raw/realized_market_cap'
+STORE_REALIZED_MARKET_CAP_DATA = config.LOCAL_BASE_PATH + '/raw/realized_market_cap'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

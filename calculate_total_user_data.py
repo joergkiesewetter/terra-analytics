@@ -7,7 +7,7 @@ from manage_transactions import get_first_transaction_timestamp, get_transaction
 from util import logging
 
 # structure /terra-data/raw/stats_daily_address_payments/<token>/<date>.csv
-STORE_TOTAL_USER_DIRECTORY = '/terra-data/raw/stats_total_user_data'
+STORE_TOTAL_USER_DIRECTORY = config.LOCAL_BASE_PATH + '/raw/stats_total_user_data'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

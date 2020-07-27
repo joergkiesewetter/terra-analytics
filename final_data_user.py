@@ -8,7 +8,7 @@ from calculate_daily_retention_data import get_retention_for_date
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_FINAL_DATA_USER = '/terra-data/v2/final/user'
+STORE_FINAL_DATA_USER = config.LOCAL_BASE_PATH + '/final/user'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

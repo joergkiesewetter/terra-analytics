@@ -16,28 +16,28 @@ log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 if __name__ == "__main__":
 
     log.info('fetching new token transactions')
-    update_token_transactions()
-    update_realized_market_capitalization()
+    # update_token_transactions()
+    # update_realized_market_capitalization()
 
     #
     # calculate interim results
     #
 
     # structure ./raw/stats_daily_payments/<token>.csv
-    calculate_daily_payment_data()
-
-    calculate_daily_transaction_data()
-
-    calculate_daily_retention_data()
-
-    calculate_market_data()
+    # calculate_daily_payment_data()
+    #
+    # calculate_daily_transaction_data()
+    #
+    # calculate_daily_retention_data()
+    #
+    # calculate_market_data()
 
     #
     # calculate final results to use in the frontend
     #
-    final_data_general()
-    final_data_payments()
-    final_data_transactions()
+    # final_data_general()
+    # final_data_payments()
+    # final_data_transactions()
     final_data_user()
 
     # structure ./raw/stats_total_amount_of_coins/<token>.csv

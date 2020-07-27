@@ -7,10 +7,10 @@ from manage_transactions import get_first_transaction_timestamp, get_transaction
 from util import logging
 
 # structure /terra-data/raw/stats_daily_transaction/<type>/<token>.csv
-STORE_DAILY_TRANSACTIONS_DIRECTORY = '/terra-data/v2/raw/stats_daily_transactions'
+STORE_DAILY_TRANSACTIONS_DIRECTORY = config.LOCAL_BASE_PATH + '/raw/stats_daily_transactions'
 
 # structure /terra-data/raw/stats_daily_address_payments/<token>/<date>.csv
-STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/terra-data/v2/raw/stats_daily_address_payments'
+STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = config.LOCAL_BASE_PATH + '/raw/stats_daily_address_payments'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
