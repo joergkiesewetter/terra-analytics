@@ -23,14 +23,13 @@ def calculate_daily_retention_data():
 
     date_to_process = get_first_transaction_timestamp()
     date_last_processed = _get_last_processed_date()
-    date_to_process = max(date_to_process, date_last_processed + timedelta(days=1))
+    date_to_process = max(date_to_process, date_last_processed - timedelta(days=31))
 
     log.debug('calculate: retention')
 
     if date_to_process >= max_time:
         return
 
-    # with open(symbol_file, 'a') as file:
     while not stop_processing:
 
         log.debug('creating retention data for ' + date_to_process.strftime('%Y-%m-%d'))
@@ -57,27 +56,36 @@ def _calculate_retention_data(start_date):
 
     retention_data = {}
 
+    date_7d = start_date + timedelta(days=7)
+    date_14d = start_date + timedelta(days=14)
+    date_30d = start_date + timedelta(days=30)
+
+    user_data_7d = calculate_daily_transaction_data.get_user(date_7d)
+    user_data_14d = calculate_daily_transaction_data.get_user(date_14d)
+    user_data_30d = calculate_daily_transaction_data.get_user(date_30d)
+
     for currency in user_data_start_date:
+
 
         if currency not in retention_data.keys():
             retention_data[currency] = {}
 
         user_list_start_date = [value['address'] for value in user_data_start_date[currency]]
 
-        for i in range(1, 31):
+        if currency in user_data_7d:
+            user_list_7d = [value['address'] for value in user_data_7d[currency]]
+            user_list_7d_intersection = _intersection(user_list_start_date, user_list_7d)
+            retention_data[currency]['7d'] = len(user_list_7d_intersection) / len(user_list_start_date)
 
-            date1 = start_date - timedelta(days=i)
-            date1_string = date1.strftime('%Y-%m-%d')
-            user_data_date1 = calculate_daily_transaction_data.get_user(date1)
+        if currency in user_data_14d:
+            user_list_14d = [value['address'] for value in user_data_14d[currency]]
+            user_list_14d_intersection = _intersection(user_list_start_date, user_list_14d)
+            retention_data[currency]['14d'] = len(user_list_14d_intersection) / len(user_list_start_date)
 
-            if currency not in user_data_date1.keys():
-                continue
-
-            user_list_date1 = [value['address'] for value in user_data_date1[currency]]
-            user_list_intersection = _intersection(user_list_start_date, user_list_date1)
-
-            if date1_string not in retention_data[currency].keys():
-                retention_data[currency][date1_string] = len(user_list_intersection) / len(user_list_date1)
+        if currency in user_data_30d:
+            user_list_30d = [value['address'] for value in user_data_30d[currency]]
+            user_list_30d_intersection = _intersection(user_list_start_date, user_list_30d)
+            retention_data[currency]['30d'] = len(user_list_30d_intersection) / len(user_list_start_date)
 
     return retention_data
 
@@ -108,38 +116,15 @@ def _get_last_processed_date():
     return last_file_timestamp
 
 
-def get_retention_for_date(last_day, currency):
+def get_retention_for_date(day, currency):
 
-    firt_day = last_day - timedelta(days=30)
+    day_string = day.strftime('%Y-%m-%d')
+    file_path = os.path.join(STORE_DAILY_RETENTION_DATA, currency, day_string + '.json')
 
-    return_data = {}
+    if not os.path.isfile(file_path):
+        return {}
 
-    for i in reversed(range(1, 31)):
+    with open(file_path, 'r') as file:
+        content = json.load(file)
 
-        date1 = last_day - timedelta(days=i)
-        date1_string = date1.strftime('%Y-%m-%d')
-
-        return_data[date1_string] = []
-
-        for j in range(0, i):
-            date2 = last_day - timedelta(days=j)
-            date2_string = date2.strftime('%Y-%m-%d')
-
-            file_path = os.path.join(STORE_DAILY_RETENTION_DATA, currency, date2_string + '.json')
-
-            if not os.path.isfile(file_path):
-                continue
-
-            with open(file_path, 'r') as file:
-                content = json.load(file)
-
-                if date1_string not in content.keys():
-                    continue
-
-                value = content[date1_string]
-                return_data[date1_string].append({
-                    'day': i-j,
-                    'value': value,
-                })
-
-    return return_data
+        return content

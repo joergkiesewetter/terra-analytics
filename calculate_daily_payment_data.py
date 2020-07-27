@@ -16,8 +16,6 @@ log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
 
 def calculate_daily_payment_data():
-    # symbol = token['symbol']
-    # symbol_file = STORE_DIRECTORY + symbol
 
     os.makedirs(STORE_DAILY_PAYMENTS_DIRECTORY, exist_ok=True)
 
@@ -59,7 +57,6 @@ def calculate_daily_payment_data():
 
             if currency not in token.keys():
                 token[currency] = {
-                    # 'file': open(os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, currency + '.csv'), 'a'),
                     'total_amount': 0,
                     'payment_count': 0,
                     'total_tax_amount': 0,
@@ -84,8 +81,6 @@ def calculate_daily_payment_data():
 
             token[currency]['active_users'][from_address]['total_amount'] += amount
             token[currency]['active_users'][from_address]['payment_count'] += 1
-
-        # print(token)
 
         for currency in token.keys():
 
@@ -115,69 +110,6 @@ def calculate_daily_payment_data():
 
         if date_to_process >= max_time:
             stop_processing = True
-
-        #
-        #     if datum[0] in token['token_contracts'] or datum[0] in token['lending_contracts']:
-        #         token_contracts_balance += int(datum[1])
-        #
-        #     elif datum[0] in token['team_accounts']:
-        #         team_balance += int(datum[1])
-        #
-        #     elif datum[0] in known_addresses.exchange_addresses:
-        #         exchange_balance += int(datum[1])
-        #
-        #     else:
-        #         remaining_accounts.append({'account': datum[0], 'balance': int(datum[1]), })
-        #
-        # remaining_accounts.sort(key=lambda element: element['balance'], reverse=True)
-        #
-        # top20 = list()
-        # top50 = list()
-        # top100 = list()
-        # top200 = list()
-        # retail = list()
-        #
-        # i = 0
-        # for account in remaining_accounts:
-        #
-        #     if i < 20:
-        #         top20.append(account)
-        #     elif i < 50:
-        #         top50.append(account)
-        #     elif i < 100:
-        #         top100.append(account)
-        #     elif i < 200:
-        #         top200.append(account)
-        #     else:
-        #         retail.append(account)
-        #
-        #     i += 1
-        #
-        # date_string = date_to_process.strftime('%Y-%m-%d')
-        # result = {
-        #     'date': date_string,
-        #     'token_contracts_balance': token_contracts_balance,
-        #     'team_balance': team_balance,
-        #     'exchanges_balance': exchange_balance,
-        #     'top20': functools.reduce(lambda a, b: a + b['balance'], top20, 0),
-        #     'top50': functools.reduce(lambda a, b: a + b['balance'], top50, 0),
-        #     'top100': functools.reduce(lambda a, b: a + b['balance'], top100, 0),
-        #     'top200': functools.reduce(lambda a, b: a + b['balance'], top200, 0),
-        #     'retail': functools.reduce(lambda a, b: a + b['balance'], retail, 0), }
-        #
-        # file.write(result['date'] + ',' + str((result['token_contracts_balance'] / pow(10, 18))) + ',' + str(
-        #     (result['team_balance'] / pow(10, 18))) + ',' + str(
-        #     (result['exchanges_balance'] / pow(10, 18))) + ',' + str((result['top20'] / pow(10, 18))) + ',' + str(
-        #     (result['top50'] / pow(10, 18))) + ',' + str((result['top100'] / pow(10, 18))) + ',' + str(
-        #     (result['top200'] / pow(10, 18))) + ',' + str((result['retail'] / pow(10, 18))) + '\n')
-        # file.flush()
-        #
-        # log.debug('calculate_token_holder_stats for ' + date_string)
-        #
-        # date_to_process += timedelta(days=1)
-        #
-        # if date_to_process >= max_time:
-        #     stop_processing = True
 
 
 def _get_last_processed_date():
