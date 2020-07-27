@@ -1,0 +1,10 @@
+[Unit]
+Description=Terra Analytics v2
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/ubuntu/terra-analytics/main.py
+
+[Install]
+WantedBy=multi-user.target
