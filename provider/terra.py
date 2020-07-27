@@ -377,6 +377,7 @@ class Terra:
 
                 else:
                     log.warning('transaction type not known: ' + m['type'])
+                    raise NotImplementedError
 
         return final_transactions
 
