@@ -144,7 +144,7 @@ def _analyse_data(symbol, data, date_to_process):
 
             return_data['circulating_supply'] += amount_coins
 
-            return_data['realized_market_cap'] += amount_coins * coin_data[2] * pow(10, 9)
+            return_data['realized_market_cap'] += amount_coins * coin_data[2] * pow(10, 6)
 
             # calculate number of coins not moved for more than a year
             if int(coin_data[0]) < date_1y.timestamp():
@@ -152,7 +152,7 @@ def _analyse_data(symbol, data, date_to_process):
 
 
         # calculate num holder
-        if (int(line[1]) / 1e9) * exchange_rate > 0.01:
+        if (int(line[1]) / 1e6) * exchange_rate > 0.01:
         # if coin_data[1] > 1e20:
             return_data['num_holder'] += 1
 
