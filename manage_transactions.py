@@ -210,6 +210,19 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
+            elif type == 'staking/MsgBeginRedelegate':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['amount'],
+                                     transaction['currency'],
+                                     transaction['delegator_address'],
+                                     transaction['validator_dst_address'],
+                                     transaction['validator_src_address'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                ])
+
             elif type == 'staking/MsgCreateValidator':
 
                 details_encoded = base64.b64encode(transaction['details'].encode('utf-8'))

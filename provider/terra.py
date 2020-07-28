@@ -309,6 +309,21 @@ class Terra:
                         'tax_currency': tax_currency,
                     })
 
+                elif m['type'] == 'staking/MsgBeginRedelegate':
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'amount': m['value']['amount']['amount'],
+                        'currency': m['value']['amount']['denom'],
+                        'delegator_address': m['value']['delegator_address'],
+                        'validator_dst_address': m['value']['validator_dst_address'],
+                        'validator_src_address': m['value']['validator_src_address'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
                 elif m['type'] == 'staking/MsgCreateValidator':
                     final_transactions.append({
                         'block': int(t['height']),
