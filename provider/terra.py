@@ -100,7 +100,50 @@ class Terra:
             #
             for m in t['tx']['value']['msg']:
 
-                if m['type'] == 'distribution/MsgWithdrawDelegationReward':
+                if m['type'] == 'bank/MsgMultiSend':
+                    # TODO support more than one currency exchange per transaction
+
+                    total_amount = 0
+                    for input in m['value']['inputs']:
+                        total_amount += int(input['coins'][0]['amount'])
+
+                    output_address = None
+                    if len(m['value']['outputs']) == 1:
+                        output_address = m['value']['outputs'][0]['address']
+
+                    for i in range(len(m['value']['inputs'])):
+
+                        amount = int(m['value']['inputs'][i]['coins'][0]['amount'])
+
+                        final_transactions.append({
+                            'block': int(t['height']),
+                            'txhash': t['txhash'],
+                            'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                            'type': m['type'],
+                            'amount': amount,
+                            'currency': m['value']['inputs'][i]['coins'][0]['denom'],
+                            'from_address': m['value']['inputs'][i]['address'],
+                            'to_address': output_address or m['value']['outputs'][i]['address'],
+                            'tax_amount': int(round(tax_amount * (amount / total_amount))),
+                            'tax_currency': tax_currency,
+                        })
+
+                elif m['type'] == 'bank/MsgSend':
+
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'amount': int(m['value']['amount'][0]['amount']),
+                        'currency': m['value']['amount'][0]['denom'],
+                        'from_address': m['value']['from_address'],
+                        'to_address': m['value']['to_address'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
+                elif m['type'] == 'distribution/MsgWithdrawDelegationReward':
 
                     if len(t['logs'][0]['events'][0]['attributes']) == 4:
                         reward_from = t['logs'][0]['events'][0]['attributes'][0]['value']
@@ -145,6 +188,22 @@ class Terra:
                         'commission': commission,
                     })
 
+
+                elif m['type'] == 'gov/MsgDeposit':
+
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'depositor': m['value']['depositor'],
+                        'proposal_id': m['value']['proposal_id'],
+                        'amount': m['value']['amount'][0]['amount'],
+                        'currency': m['value']['amount'][0]['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
                 elif m['type'] == 'gov/MsgSubmitProposal':
 
                     proposal_id = -1
@@ -174,48 +233,6 @@ class Terra:
                         'tax_amount': int(tax_amount),
                         'tax_currency': tax_currency,
                     })
-
-                elif m['type'] == 'gov/MsgDeposit':
-                    final_transactions.append({
-                        'block': int(t['height']),
-                        'txhash': t['txhash'],
-                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                        'type': m['type'],
-                        'depositor': m['value']['depositor'],
-                        'proposal_id': m['value']['proposal_id'],
-                        'amount': m['value']['amount'][0]['amount'],
-                        'currency': m['value']['amount'][0]['denom'],
-                        'tax_amount': int(tax_amount),
-                        'tax_currency': tax_currency,
-                    })
-
-                elif m['type'] == 'staking/MsgDelegate':
-                    final_transactions.append({
-                        'block': int(t['height']),
-                        'txhash': t['txhash'],
-                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                        'type': m['type'],
-                        'delegator': m['value']['delegator_address'],
-                        'validator': m['value']['validator_address'],
-                        'amount': m['value']['amount']['amount'],
-                        'currency': m['value']['amount']['denom'],
-                        'tax_amount': int(tax_amount),
-                        'tax_currency': tax_currency,
-                    })
-                elif m['type'] == 'staking/MsgUndelegate':
-                    final_transactions.append({
-                        'block': int(t['height']),
-                        'txhash': t['txhash'],
-                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                        'type': m['type'],
-                        'delegator': m['value']['delegator_address'],
-                        'validator': m['value']['validator_address'],
-                        'amount': m['value']['amount']['amount'],
-                        'currency': m['value']['amount']['denom'],
-                        'tax_amount': int(tax_amount),
-                        'tax_currency': tax_currency, })
-
-                    print('message undelegate')
 
                 elif m['type'] == 'market/MsgSwap':
 
@@ -259,44 +276,12 @@ class Terra:
                         'tax_currency': tax_currency,
                     })
 
-                elif m['type'] == 'staking/MsgEditValidator':
+                elif m['type'] == 'oracle/MsgDelegateFeedConsent':
                     final_transactions.append({
                         'block': int(t['height']),
                         'txhash': t['txhash'],
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
-                        'address': m['value']['address'],
-                        'details': m['value']['Description']['details'],
-                        'moniker': m['value']['Description']['moniker'],
-                        'website': m['value']['Description']['website'],
-                        'identity': m['value']['Description']['identity'],
-                        'commission_rate': m['value']['commission_rate'],
-                        'min_self_delegation': m['value']['min_self_delegation'],
-                        'tax_amount': int(tax_amount),
-                        'tax_currency': tax_currency,
-                    })
-
-                elif m['type'] == 'staking/MsgCreateValidator':
-                    final_transactions.append({
-                        'block': int(t['height']),
-                        'txhash': t['txhash'],
-                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                        'type': m['type'],
-                        'pubkey': m['value']['pubkey'],
-                        'amount': m['value']['value']['amount'],
-                        'currency': m['value']['value']['denom'],
-                        'commission_rate': m['value']['commission']['rate'],
-                        'commission_max_rate': m['value']['commission']['max_rate'],
-                        'commission_max_change_rate': m['value']['commission']['max_change_rate'],
-                        'details': m['value']['description']['details'],
-                        'moniker': m['value']['description']['moniker'],
-                        'website': m['value']['description']['website'],
-                        'identity': m['value']['description']['identity'],
-                        'min_self_delegation': m['value']['min_self_delegation'],
-                        'delegator': m['value']['delegator_address'],
-                        'validator': m['value']['validator_address'],
-                        'tax_amount': int(tax_amount),
-                        'tax_currency': tax_currency,
                     })
 
                 elif m['type'] == 'oracle/MsgExchangeRateVote':
@@ -324,56 +309,74 @@ class Terra:
                         'tax_currency': tax_currency,
                     })
 
-                elif m['type'] == 'oracle/MsgDelegateFeedConsent':
+                elif m['type'] == 'staking/MsgCreateValidator':
                     final_transactions.append({
                         'block': int(t['height']),
                         'txhash': t['txhash'],
                         'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
                         'type': m['type'],
-                    })
-
-                elif m['type'] == 'bank/MsgMultiSend':
-                    # TODO support more than one currency exchange per transaction
-
-                    total_amount = 0
-                    for input in m['value']['inputs']:
-                        total_amount += int(input['coins'][0]['amount'])
-
-                    output_address = None
-                    if len(m['value']['outputs']) == 1:
-                        output_address = m['value']['outputs'][0]['address']
-
-                    for i in range(len(m['value']['inputs'])):
-
-                        amount = int(m['value']['inputs'][i]['coins'][0]['amount'])
-
-                        final_transactions.append({
-                            'block': int(t['height']),
-                            'txhash': t['txhash'],
-                            'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                            'type': m['type'],
-                            'amount': amount,
-                            'currency': m['value']['inputs'][i]['coins'][0]['denom'],
-                            'from_address': m['value']['inputs'][i]['address'],
-                            'to_address': output_address or m['value']['outputs'][i]['address'],
-                            'tax_amount': int(round(tax_amount * (amount / total_amount))),
-                            'tax_currency': tax_currency,
-                        })
-
-                elif m['type'] == 'bank/MsgSend':
-
-                    final_transactions.append({
-                        'block': int(t['height']),
-                        'txhash': t['txhash'],
-                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
-                        'type': m['type'],
-                        'amount': int(m['value']['amount'][0]['amount']),
-                        'currency': m['value']['amount'][0]['denom'],
-                        'from_address': m['value']['from_address'],
-                        'to_address': m['value']['to_address'],
+                        'pubkey': m['value']['pubkey'],
+                        'amount': m['value']['value']['amount'],
+                        'currency': m['value']['value']['denom'],
+                        'commission_rate': m['value']['commission']['rate'],
+                        'commission_max_rate': m['value']['commission']['max_rate'],
+                        'commission_max_change_rate': m['value']['commission']['max_change_rate'],
+                        'details': m['value']['description']['details'],
+                        'moniker': m['value']['description']['moniker'],
+                        'website': m['value']['description']['website'],
+                        'identity': m['value']['description']['identity'],
+                        'min_self_delegation': m['value']['min_self_delegation'],
+                        'delegator': m['value']['delegator_address'],
+                        'validator': m['value']['validator_address'],
                         'tax_amount': int(tax_amount),
                         'tax_currency': tax_currency,
                     })
+
+                elif m['type'] == 'staking/MsgDelegate':
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'delegator': m['value']['delegator_address'],
+                        'validator': m['value']['validator_address'],
+                        'amount': m['value']['amount']['amount'],
+                        'currency': m['value']['amount']['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
+                elif m['type'] == 'staking/MsgEditValidator':
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'address': m['value']['address'],
+                        'details': m['value']['Description']['details'],
+                        'moniker': m['value']['Description']['moniker'],
+                        'website': m['value']['Description']['website'],
+                        'identity': m['value']['Description']['identity'],
+                        'commission_rate': m['value']['commission_rate'],
+                        'min_self_delegation': m['value']['min_self_delegation'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
+                elif m['type'] == 'staking/MsgUndelegate':
+                    final_transactions.append({
+                        'block': int(t['height']),
+                        'txhash': t['txhash'],
+                        'timestamp': int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type': m['type'],
+                        'delegator': m['value']['delegator_address'],
+                        'validator': m['value']['validator_address'],
+                        'amount': m['value']['amount']['amount'],
+                        'currency': m['value']['amount']['denom'],
+                        'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency, })
+
+                    print('message undelegate')
 
                 else:
                     log.warning('transaction type not known: ' + m['type'])

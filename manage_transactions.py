@@ -88,7 +88,33 @@ def update_token_transactions():
             # TODO message type cosmos/MsgUnjail (see block 806047)
             # TODO message type staking/MsgBeginRedelegate (see block 2846428)
 
-            if type == 'distribution/MsgWithdrawDelegationReward':
+            if type == 'bank/MsgMultiSend':
+
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     str(transaction['amount']),
+                                     transaction['currency'],
+                                     transaction['from_address'],
+                                     transaction['to_address'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                    ])
+
+            elif type == 'bank/MsgSend':
+
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     str(transaction['amount']),
+                                     transaction['currency'],
+                                     transaction['from_address'],
+                                     transaction['to_address'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                    ])
+
+            elif type == 'distribution/MsgWithdrawDelegationReward':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
@@ -109,6 +135,20 @@ def update_token_transactions():
                                      transaction['commission'],
                                     ])
 
+
+            elif type == 'gov/MsgDeposit':
+
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['depositor'],
+                                     transaction['proposal_id'],
+                                     transaction['amount'],
+                                     transaction['currency'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                     ])
+
             elif type == 'gov/MsgSubmitProposal':
 
                 title_encoded = base64.b64encode(transaction['proposal_title'].encode('utf-8'))
@@ -127,41 +167,6 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
-            elif type == 'gov/MsgDeposit':
-                new_line = ','.join([str(transaction['block']),
-                                     str(transaction['timestamp']),
-                                     transaction['txhash'],
-                                     transaction['depositor'],
-                                     transaction['proposal_id'],
-                                     transaction['amount'],
-                                     transaction['currency'],
-                                     str(transaction['tax_amount']),
-                                     transaction['tax_currency'],
-                                    ])
-
-            elif type == 'staking/MsgDelegate':
-                new_line = ','.join([str(transaction['block']),
-                                     str(transaction['timestamp']),
-                                     transaction['txhash'],
-                                     transaction['delegator'],
-                                     transaction['validator'],
-                                     transaction['amount'],
-                                     transaction['currency'],
-                                     str(transaction['tax_amount']),
-                                     transaction['tax_currency'],
-                                    ])
-
-            elif type == 'staking/MsgUndelegate':
-                new_line = ','.join([str(transaction['block']),
-                                     str(transaction['timestamp']),
-                                     transaction['txhash'],
-                                     transaction['delegator'],
-                                     transaction['validator'],
-                                     transaction['amount'],
-                                     transaction['currency'],
-                                     str(transaction['tax_amount']),
-                                     transaction['tax_currency'],
-                ])
             elif type == 'market/MsgSwap':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
@@ -178,20 +183,29 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
-            elif type == 'staking/MsgEditValidator':
-
-                details_encoded = base64.b64encode(transaction['details'].encode('utf-8'))
-
+            elif type == 'oracle/MsgDelegateFeedConsent':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
-                                     transaction['address'],
-                                     details_encoded.decode('utf-8'),
-                                     transaction['moniker'],
-                                     transaction['website'],
-                                     transaction['identity'],
-                                     transaction['commission_rate'] or '-1',
-                                     transaction.get('min_self_delegation') or '',
+                                    ])
+
+            elif type == 'oracle/MsgExchangeRateVote':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     str(transaction['exchange_rate']),
+                                     transaction['currency'],
+                                     transaction['feeder'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                    ])
+
+            elif type == 'oracle/MsgExchangeRatePrevote':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['feeder'],
+                                     transaction['currency'],
                                      str(transaction['tax_amount']),
                                      transaction['tax_currency'],
                                     ])
@@ -220,58 +234,48 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
-            elif type == 'oracle/MsgExchangeRateVote':
+            elif type == 'staking/MsgDelegate':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
-                                     str(transaction['exchange_rate']),
-                                     transaction['currency'],
-                                     transaction['feeder'],
-                                     str(transaction['tax_amount']),
-                                     transaction['tax_currency'],
-                                    ])
-
-            elif type == 'oracle/MsgExchangeRatePrevote':
-                new_line = ','.join([str(transaction['block']),
-                                     str(transaction['timestamp']),
-                                     transaction['txhash'],
-                                     transaction['feeder'],
+                                     transaction['delegator'],
+                                     transaction['validator'],
+                                     transaction['amount'],
                                      transaction['currency'],
                                      str(transaction['tax_amount']),
                                      transaction['tax_currency'],
                                     ])
 
-            elif type == 'oracle/MsgDelegateFeedConsent':
-                new_line = ','.join([str(transaction['block']),
-                                     str(transaction['timestamp']),
-                                     transaction['txhash'],
-                                    ])
+            elif type == 'staking/MsgEditValidator':
 
-            elif type == 'bank/MsgMultiSend':
+                details_encoded = base64.b64encode(transaction['details'].encode('utf-8'))
 
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
-                                     str(transaction['amount']),
-                                     transaction['currency'],
-                                     transaction['from_address'],
-                                     transaction['to_address'],
+                                     transaction['address'],
+                                     details_encoded.decode('utf-8'),
+                                     transaction['moniker'],
+                                     transaction['website'],
+                                     transaction['identity'],
+                                     transaction['commission_rate'] or '-1',
+                                     transaction.get('min_self_delegation') or '',
                                      str(transaction['tax_amount']),
                                      transaction['tax_currency'],
                                     ])
 
-            elif type == 'bank/MsgSend':
-
+            elif type == 'staking/MsgUndelegate':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
-                                     str(transaction['amount']),
+                                     transaction['delegator'],
+                                     transaction['validator'],
+                                     transaction['amount'],
                                      transaction['currency'],
-                                     transaction['from_address'],
-                                     transaction['to_address'],
                                      str(transaction['tax_amount']),
                                      transaction['tax_currency'],
-                                    ])
+                ])
+
             else:
                 new_line = ''
                 log.warning('transaction type not known: ' + type)
