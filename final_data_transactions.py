@@ -9,7 +9,7 @@ import config
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_FINAL_DATA_TRANSACTIONS = '/Users/jorg.kiesewetter/terra-data/v2/final/transactions'
+STORE_FINAL_DATA_TRANSACTIONS = '/terra-data/v2/final/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

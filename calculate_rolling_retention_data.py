@@ -10,7 +10,7 @@ import config
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_ROLLING_RETENTION_DATA = '/Users/jorg.kiesewetter/terra-data/v2/raw/stats_rolling_retention_data'
+STORE_ROLLING_RETENTION_DATA = '/terra-data/v2/raw/stats_rolling_retention_data'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

@@ -10,7 +10,7 @@ import calculate_rolling_retention_data
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_FINAL_DATA_USER = '/Users/jorg.kiesewetter/terra-data/v2/final/rolling_retention'
+STORE_FINAL_DATA_USER = '/terra-data/v2/final/rolling_retention'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 

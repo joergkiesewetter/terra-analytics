@@ -10,7 +10,7 @@ from provider.terra import Terra
 from util import logging
 
 # structure: /terra-data/raw/transactions/<type>/<date>.csv
-BASE_DIRECTORY = '/Users/jorg.kiesewetter/terra-data/v2/raw/transactions'
+BASE_DIRECTORY = '//terra-data/v2/raw/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
