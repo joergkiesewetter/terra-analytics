@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime, timedelta
 
+import pytz
+
 import calculate_daily_payment_data
 import config
 from manage_transactions import get_first_transaction_timestamp
@@ -16,7 +18,7 @@ def final_data_payments():
     os.makedirs(STORE_FINAL_DATA_PAYMENTS, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
@@ -61,10 +63,12 @@ def _get_last_processed_date():
     files = [f for f in os.listdir(STORE_FINAL_DATA_PAYMENTS) if os.path.isfile(os.path.join(STORE_FINAL_DATA_PAYMENTS, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+    last_file_timestamp = last_file_timestamp.replace(tzinfo=pytz.UTC)
 
     # get the file with the highest timestamp
     for file in files:
         this_timestamp = datetime.strptime(file.split('.')[0], '%Y-%m-%d')
+        this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)
 
         last_file_timestamp = max(last_file_timestamp, this_timestamp)
 

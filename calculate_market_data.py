@@ -47,8 +47,8 @@ def calculate_market_data():
 
                 data = manage_realized_market_capitalization.get_data(date_to_process, symbol)
 
-                if len(data) <= 0:
-                    return
+                # if len(data) <= 0:
+                #     continue
 
                 result = _analyse_data(symbol, data, date_to_process)
 
@@ -65,7 +65,7 @@ def calculate_market_data():
                 file.write(result_string + '\n')
                 file.flush()
 
-                log.debug('calculate realized market cap for ' + symbol + ': ' + date_string)
+                log.debug('calculate market data for ' + symbol + ': ' + date_string)
 
                 date_to_process += timedelta(days=1)
 
@@ -79,7 +79,7 @@ def _get_last_processed_date(symbol):
     last_file_timestamp = '1970-01-01'
 
     if not os.path.exists(symbol_file):
-        return datetime.utcfromtimestamp(0)
+        return datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)
 
     with open(symbol_file, 'r') as file:
 

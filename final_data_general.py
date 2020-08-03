@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime, timedelta
 
+import pytz
+
 import calculate_daily_payment_data
 import calculate_market_data
 import config
@@ -18,7 +20,7 @@ def final_data_general():
     os.makedirs(STORE_FINAL_DATA_GENERAL, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 

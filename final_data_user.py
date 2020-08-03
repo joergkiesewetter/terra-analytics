@@ -19,7 +19,7 @@ def final_data_user():
     os.makedirs(STORE_FINAL_DATA_USER, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0,tzinfo=pytz.UTC)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
