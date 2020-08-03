@@ -1,14 +1,16 @@
 import base64
 import os
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+import pytz
 
 import config
 from provider.terra import Terra
 from util import logging
 
 # structure: /terra-data/raw/transactions/<type>/<date>.csv
-BASE_DIRECTORY = '/terra-data/v2/raw/transactions'
+BASE_DIRECTORY = '/Users/jorg.kiesewetter/terra-data/v2/raw/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -422,9 +424,12 @@ def get_first_transaction_timestamp():
             filename = file.split('.')[0]
 
             timestamp = datetime.strptime(filename, '%Y-%m-%d')
+            timestamp = timestamp.replace(tzinfo=pytz.UTC)
 
             if not last_file_timestamp or timestamp < last_file_timestamp:
                 last_file_timestamp = timestamp
+
+    print(last_file_timestamp)
 
     return last_file_timestamp
 

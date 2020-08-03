@@ -2,15 +2,17 @@ import os
 import traceback
 from datetime import datetime, timedelta
 
+import pytz
+
 import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
 # structure /terra-data/raw/stats_daily_transaction/<type>/<token>.csv
-STORE_DAILY_TRANSACTIONS_DIRECTORY = '/terra-data/v2/raw/stats_daily_transactions'
+STORE_DAILY_TRANSACTIONS_DIRECTORY = '/Users/jorg.kiesewetter/terra-data/v2/raw/stats_daily_transactions'
 
 # structure /terra-data/raw/stats_daily_address_payments/<token>/<date>.csv
-STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/terra-data/v2/raw/stats_daily_address_payments'
+STORE_DAILY_ADDRESS_PAYMENTS_DIRECTORY = '/Users/jorg.kiesewetter/terra-data/v2/raw/stats_daily_address_payments'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -22,7 +24,7 @@ def calculate_daily_transaction_data():
     os.makedirs(STORE_DAILY_TRANSACTIONS_DIRECTORY, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
@@ -194,6 +196,7 @@ def _get_last_processed_date():
              os.path.isdir(os.path.join(STORE_DAILY_TRANSACTIONS_DIRECTORY, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+    last_file_timestamp = last_file_timestamp.replace(tzinfo=pytz.UTC)
 
     for directory in directories:
 
@@ -211,6 +214,7 @@ def _get_last_processed_date():
                     line_parts = line.split(',')
 
                     this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+                    this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)
 
                     last_file_timestamp = max(last_file_timestamp, this_timestamp)
 

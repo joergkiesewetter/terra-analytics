@@ -2,11 +2,13 @@ import json
 import os
 from datetime import datetime, timedelta
 
+import pytz
+
 import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
-STORE_REALIZED_MARKET_CAP_DATA = '/terra-data/v2/raw/realized_market_cap'
+STORE_REALIZED_MARKET_CAP_DATA = '/Users/jorg.kiesewetter/terra-data/v2/raw/realized_market_cap'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -16,7 +18,7 @@ def update_realized_market_capitalization():
     os.makedirs(STORE_REALIZED_MARKET_CAP_DATA, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
@@ -141,6 +143,7 @@ def _get_last_processed_date():
                    os.path.isdir(os.path.join(STORE_REALIZED_MARKET_CAP_DATA, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+    last_file_timestamp = last_file_timestamp.replace(tzinfo=pytz.UTC)
 
     for directory in directories:
 
@@ -152,6 +155,8 @@ def _get_last_processed_date():
         for file in files:
             line_parts = file.split('.')
             this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+            this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)
+
             last_file_timestamp = max(last_file_timestamp, this_timestamp)
 
     return last_file_timestamp
@@ -217,6 +222,7 @@ def get_first_data_timestamp(token):
         filename = file.split('.')[0]
 
         timestamp = datetime.strptime(filename, '%Y-%m-%d')
+        timestamp = timestamp.replace(tzinfo=pytz.UTC)
 
         if not last_file_timestamp or timestamp < last_file_timestamp:
             last_file_timestamp = timestamp

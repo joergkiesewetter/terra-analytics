@@ -2,13 +2,15 @@ import json
 import os
 from datetime import datetime, timedelta
 
+import pytz
+
 import calculate_daily_transaction_data
 import config
 from calculate_daily_retention_data import get_retention_for_date
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_FINAL_DATA_USER = '/terra-data/v2/final/user'
+STORE_FINAL_DATA_USER = '/Users/jorg.kiesewetter/terra-data/v2/final/user'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -17,7 +19,7 @@ def final_data_user():
     os.makedirs(STORE_FINAL_DATA_USER, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0,tzinfo=pytz.UTC)
 
     stop_processing = False
 

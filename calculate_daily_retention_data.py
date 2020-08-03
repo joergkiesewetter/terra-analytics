@@ -2,12 +2,15 @@ import json
 import os
 from datetime import timedelta, datetime
 
+import pytz
+
 import calculate_daily_transaction_data
+import calculate_total_user_data
 import config
 from manage_transactions import get_first_transaction_timestamp
 from util import logging
 
-STORE_DAILY_RETENTION_DATA = '/terra-data/v2/raw/stats_daily_retention_data'
+STORE_DAILY_RETENTION_DATA = '/Users/jorg.kiesewetter/terra-data/v2/raw/stats_daily_retention_data'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -17,7 +20,7 @@ def calculate_daily_retention_data():
     os.makedirs(STORE_DAILY_RETENTION_DATA, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
@@ -52,7 +55,7 @@ def calculate_daily_retention_data():
 
 def _calculate_retention_data(start_date):
 
-    user_data_start_date = calculate_daily_transaction_data.get_user(start_date)
+    new_user_data = calculate_total_user_data.get_new_user_for_day(start_date)
 
     retention_data = {}
 
@@ -64,28 +67,41 @@ def _calculate_retention_data(start_date):
     user_data_14d = calculate_daily_transaction_data.get_user(date_14d)
     user_data_30d = calculate_daily_transaction_data.get_user(date_30d)
 
-    for currency in user_data_start_date:
+    for currency in new_user_data:
 
 
         if currency not in retention_data.keys():
             retention_data[currency] = {}
 
-        user_list_start_date = [value['address'] for value in user_data_start_date[currency]]
+        new_user_list = [key for (key, value) in new_user_data[currency].items()]
+
+        if len(new_user_list) <= 0:
+            retention_data[currency]['7d'] = 0
+            retention_data[currency]['14d'] = 0
+            retention_data[currency]['30d'] = 0
+            continue
 
         if currency in user_data_7d:
             user_list_7d = [value['address'] for value in user_data_7d[currency]]
-            user_list_7d_intersection = _intersection(user_list_start_date, user_list_7d)
-            retention_data[currency]['7d'] = len(user_list_7d_intersection) / len(user_list_start_date)
+            user_list_7d_intersection = _intersection(new_user_list, user_list_7d)
+            retention_data[currency]['7d'] = len(user_list_7d_intersection) / len(new_user_list)
+        else:
+            retention_data[currency]['7d'] = 0
 
         if currency in user_data_14d:
             user_list_14d = [value['address'] for value in user_data_14d[currency]]
-            user_list_14d_intersection = _intersection(user_list_start_date, user_list_14d)
-            retention_data[currency]['14d'] = len(user_list_14d_intersection) / len(user_list_start_date)
+            user_list_14d_intersection = _intersection(new_user_list, user_list_14d)
+            retention_data[currency]['14d'] = len(user_list_14d_intersection) / len(new_user_list)
+        else:
+            retention_data[currency]['14d'] = 0
 
         if currency in user_data_30d:
             user_list_30d = [value['address'] for value in user_data_30d[currency]]
-            user_list_30d_intersection = _intersection(user_list_start_date, user_list_30d)
-            retention_data[currency]['30d'] = len(user_list_30d_intersection) / len(user_list_start_date)
+            user_list_30d_intersection = _intersection(new_user_list, user_list_30d)
+            retention_data[currency]['30d'] = len(user_list_30d_intersection) / len(new_user_list)
+        else:
+            retention_data[currency]['30d'] = 0
+
 
     return retention_data
 
@@ -99,6 +115,7 @@ def _get_last_processed_date():
              os.path.isdir(os.path.join(STORE_DAILY_RETENTION_DATA, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+    last_file_timestamp = last_file_timestamp.replace(tzinfo=pytz.UTC)
 
     for directory in directories:
 
@@ -111,6 +128,7 @@ def _get_last_processed_date():
 
             line_parts = file.split('.')
             this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+            this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)
             last_file_timestamp = max(last_file_timestamp, this_timestamp)
 
     return last_file_timestamp

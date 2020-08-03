@@ -2,11 +2,13 @@ import json
 import os
 from datetime import date, datetime, timedelta
 
+import pytz
+
 import config
 import manage_realized_market_capitalization
 from util import logging
 
-STORE_MARKET_DATA = '/terra-data/v2/raw/market_data/'
+STORE_MARKET_DATA = '/Users/jorg.kiesewetter/terra-data/v2/raw/market_data/'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -22,7 +24,7 @@ def calculate_market_data():
         symbol_file = os.path.join(STORE_MARKET_DATA, symbol + '.csv')
 
         max_time = datetime.utcnow()
-        max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
         stop_processing = False
 
@@ -35,7 +37,7 @@ def calculate_market_data():
         date_last_processed = _get_last_processed_date(symbol)
         date_to_process = max(date_to_process, date_last_processed + timedelta(days=1))
 
-        log.debug('calculate realized market cap for ' + symbol)
+        log.debug('calculate market data for ' + symbol)
 
         if date_to_process >= max_time:
             return
@@ -86,7 +88,10 @@ def _get_last_processed_date(symbol):
 
             last_file_timestamp = line_parts[0]
 
-    return datetime.strptime(last_file_timestamp, '%Y-%m-%d')
+    timestamp = datetime.strptime(last_file_timestamp, '%Y-%m-%d')
+    timestamp = timestamp.replace(tzinfo=pytz.UTC)
+
+    return timestamp
 
 
 ##

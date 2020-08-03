@@ -2,12 +2,14 @@ import os
 import traceback
 from datetime import datetime, timedelta
 
+import pytz
+
 import config
 from manage_transactions import get_first_transaction_timestamp, get_transaction_data
 from util import logging
 
 # structure /terra-data/raw/stats_daily_address_payments/<token>/<date>.csv
-STORE_TOTAL_USER_DIRECTORY = '/terra-data/raw/stats_total_user_data'
+STORE_TOTAL_USER_DIRECTORY = '/Users/jorg.kiesewetter/terra-data/v2/raw/stats_total_user_data'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -16,7 +18,7 @@ def calculate_total_user_data():
     os.makedirs(STORE_TOTAL_USER_DIRECTORY, exist_ok=True)
 
     max_time = datetime.utcnow()
-    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    max_time = max_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
 
     stop_processing = False
 
@@ -124,6 +126,7 @@ def _get_last_processed_date():
                    os.path.isdir(os.path.join(STORE_TOTAL_USER_DIRECTORY, f))]
 
     last_file_timestamp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+    last_file_timestamp = last_file_timestamp.replace(tzinfo=pytz.UTC)
 
     for directory in directories:
 
@@ -135,6 +138,8 @@ def _get_last_processed_date():
         for file in files:
             line_parts = file.split('.')
             this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
+            this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)
+
             last_file_timestamp = max(last_file_timestamp, this_timestamp)
 
     return last_file_timestamp
@@ -155,10 +160,61 @@ def get_data_for_date(date):
 
                 for line in file:
 
-                    if len(line) <= 0:
+                    if len(line.strip()) <= 0:
                         continue
 
-                    line_parts = line.split(';')
+                    line_parts = line.strip().split(';')
+
+                    return_data[token][line_parts[0]] = {
+                        'first_seen_timestamp': line_parts[1],
+                        'last_seen_timestamp': line_parts[2],
+                    }
+
+        except:
+            log.debug('error fetching data')
+            traceback.print_exc()
+
+    return return_data
+
+
+def get_new_user_for_day(date: datetime):
+    directories = [f for f in os.listdir(STORE_TOTAL_USER_DIRECTORY) if
+                   os.path.isdir(os.path.join(STORE_TOTAL_USER_DIRECTORY, f))]
+
+    return_data = {}
+
+    start_time = datetime.utcfromtimestamp(date.timestamp())
+    end_time = datetime.utcfromtimestamp(date.timestamp())
+    start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
+    end_time = end_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=pytz.UTC)
+    end_time += timedelta(days=1)
+
+    start_time_timestamp = start_time.timestamp()
+    end_time_timestamp = end_time.timestamp()
+
+    for token in directories:
+        try:
+
+            return_data[token] = {}
+
+            file_path = os.path.join(STORE_TOTAL_USER_DIRECTORY, token, date.strftime('%Y-%m-%d') + '.csv')
+
+            if not os.path.isfile(file_path):
+                continue
+
+            with open(file_path, 'rt') as file:
+
+                for line in file:
+
+                    if len(line.strip()) <= 0:
+                        continue
+
+                    line_parts = line.strip().split(';')
+
+                    first_seen_timestamp = int(line_parts[1])
+
+                    if first_seen_timestamp < start_time_timestamp or first_seen_timestamp >= end_time_timestamp:
+                        continue
 
                     return_data[token][line_parts[0]] = {
                         'first_seen_timestamp': line_parts[1],
