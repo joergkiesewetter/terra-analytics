@@ -85,11 +85,19 @@ def update_token_transactions():
 
                 token[type]['file'] = open(os.path.join(token[type]['directory'], token[type]['filename']), 'a')
 
-            # TODO message type cosmos/MsgUnjail (see block 806047)
             # TODO message type staking/MsgBeginRedelegate (see block 2846428)
 
-            if type == 'bank/MsgMultiSend':
+            if type == 'cosmos/MsgUnjail':
+                new_line = ','.join(([
+                    str(transaction['block']),
+                    str(transaction['timestamp']),
+                    transaction['txhash'],
+                    transaction['address'],
+                    str(transaction['tax_amount']),
+                    transaction['tax_currency'],
+                ]))
 
+            elif type == 'bank/MsgMultiSend':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
                                      transaction['txhash'],
@@ -134,7 +142,6 @@ def update_token_transactions():
                                      transaction['commission_from'],
                                      transaction['commission'],
                                     ])
-
 
             elif type == 'gov/MsgDeposit':
 

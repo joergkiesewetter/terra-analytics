@@ -100,7 +100,19 @@ class Terra:
             #
             for m in t['tx']['value']['msg']:
 
-                if m['type'] == 'bank/MsgMultiSend':
+                if m['type'] == 'cosmos/MsgUnjail':
+
+                    final_transactions.append({
+                        'block':        int(t['height']),
+                        'txhash':       t['txhash'],
+                        'timestamp':    int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type':         m['type'],
+                        'address':      m['value']['address'],
+                        'tax_amount':   int(tax_amount),
+                        'tax_currency': tax_currency,
+
+                    })
+                elif m['type'] == 'bank/MsgMultiSend':
                     # TODO support more than one currency exchange per transaction
 
                     total_amount = 0

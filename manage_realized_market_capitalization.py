@@ -110,8 +110,6 @@ def update_realized_market_capitalization():
                         remaining_value -= from_amount
                         from_account['data'] = from_account['data'][1:]
 
-
-
                 from_account['balance'] = max(0, int(from_account['balance']) - amount)
 
 
