@@ -10,7 +10,7 @@ from provider.terra import Terra
 from util import logging
 
 # structure: /terra-data/raw/transactions/<type>/<date>.csv
-BASE_DIRECTORY = '//terra-data/v2/raw/transactions'
+BASE_DIRECTORY = '/terra-data/v2/raw/transactions'
 
 log = logging.get_custom_logger(__name__, config.LOG_LEVEL)
 
@@ -376,6 +376,10 @@ def _get_last_transaction():
 
         # get the file with the highest timestamp
         for file in files:
+
+            if file.startswith('.'):
+                continue
+
             filename = file.split('.')[0]
 
             timestamp = datetime.strptime(filename, '%Y-%m-%d')
@@ -421,6 +425,10 @@ def get_first_transaction_timestamp():
 
         # get the file with the highest timestamp
         for file in files:
+
+            if file.startswith('.'):
+                continue
+
             filename = file.split('.')[0]
 
             timestamp = datetime.strptime(filename, '%Y-%m-%d')

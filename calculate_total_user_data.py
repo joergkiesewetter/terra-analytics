@@ -136,6 +136,10 @@ def _get_last_processed_date():
 
         # get the file with the highest timestamp
         for file in files:
+
+            if file.startswith('.'):
+                continue
+
             line_parts = file.split('.')
             this_timestamp = datetime.strptime(line_parts[0], '%Y-%m-%d')
             this_timestamp = this_timestamp.replace(tzinfo=pytz.UTC)

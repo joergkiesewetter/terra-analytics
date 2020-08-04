@@ -122,6 +122,10 @@ def _get_last_processed_date():
 
     # get the file with the highest timestamp
     for file in files:
+
+        if file.startswith('.'):
+            continue
+
         symbol_file = os.path.join(STORE_DAILY_PAYMENTS_DIRECTORY, file)
 
         with open(symbol_file, 'r') as file:
