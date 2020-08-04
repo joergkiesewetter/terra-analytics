@@ -43,6 +43,7 @@ if __name__ == "__main__":
     final_data_payments()
     final_data_transactions()
     final_data_user()
+    final_data_rolling_retention()
 
     # structure ./raw/stats_total_amount_of_coins/<token>.csv
     # calculate_total_amount_of_coins()

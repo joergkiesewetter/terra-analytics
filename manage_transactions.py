@@ -318,6 +318,10 @@ def _clear_last_block(block_number):
 
         # get the file with the highest timestamp
         for file in files:
+
+            if file.startswith('.'):
+                continue
+                
             filename = file.split('.')[0]
 
             timestamp = datetime.strptime(filename, '%Y-%m-%d')
