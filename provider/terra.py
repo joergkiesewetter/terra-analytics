@@ -1,5 +1,4 @@
 import math
-import re
 import time
 import traceback
 from datetime import datetime
@@ -153,6 +152,19 @@ class Terra:
                         'to_address': m['value']['to_address'],
                         'tax_amount': int(tax_amount),
                         'tax_currency': tax_currency,
+                    })
+
+                elif m['type'] == 'distribution/MsgModifyWithdrawAddress':
+
+                    final_transactions.append({
+                        'block':             int(t['height']),
+                        'txhash':            t['txhash'],
+                        'timestamp':         int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type':              m['type'],
+                        'delegator_address': m['value']['delegator_address'],
+                        'withdraw_address':  m['value']['withdraw_address'],
+                        'tax_amount':        int(tax_amount),
+                        'tax_currency':      tax_currency,
                     })
 
                 elif m['type'] == 'distribution/MsgWithdrawDelegationReward':

@@ -122,6 +122,16 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
+            elif type == 'distribution/MsgModifyWithdrawAddress':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['delegator_address'],
+                                     transaction['withdraw_address'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                     ])
+
             elif type == 'distribution/MsgWithdrawDelegationReward':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
@@ -132,7 +142,7 @@ def update_token_transactions():
                                      transaction['delegation_reward'],
                                      str(transaction['tax_amount']),
                                      transaction['tax_currency'],
-                                    ])
+                                     ])
 
             elif type == 'distribution/MsgWithdrawValidatorCommission':
                 new_line = ','.join([str(transaction['block']),
