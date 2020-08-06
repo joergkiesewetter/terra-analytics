@@ -212,7 +212,6 @@ class Terra:
                         'commission': commission,
                     })
 
-
                 elif m['type'] == 'gov/MsgDeposit':
 
                     final_transactions.append({
@@ -255,6 +254,20 @@ class Terra:
                         'proposal_title': m['value']['content']['value']['title'],
                         'proposal_text': m['value']['content']['value']['description'],
                         'tax_amount': int(tax_amount),
+                        'tax_currency': tax_currency,
+                    })
+
+                elif m['type'] == 'gov/MsgVote':
+
+                    final_transactions.append({
+                        'block':        int(t['height']),
+                        'txhash':       t['txhash'],
+                        'timestamp':    int(datetime.strptime(t['timestamp'], TIMESTAMP_FORMAT).timestamp()),
+                        'type':         m['type'],
+                        'proposal_id':  m['value']['proposal_id'],
+                        'voter':        m['value']['voter'],
+                        'option':       m['value']['option'],
+                        'tax_amount':   int(tax_amount),
                         'tax_currency': tax_currency,
                     })
 

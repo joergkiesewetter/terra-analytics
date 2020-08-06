@@ -184,6 +184,17 @@ def update_token_transactions():
                                      transaction['tax_currency'],
                                     ])
 
+            elif type == 'gov/MsgVote':
+                new_line = ','.join([str(transaction['block']),
+                                     str(transaction['timestamp']),
+                                     transaction['txhash'],
+                                     transaction['proposal_id'],
+                                     transaction['voter'],
+                                     transaction['option'],
+                                     str(transaction['tax_amount']),
+                                     transaction['tax_currency'],
+                                     ])
+
             elif type == 'market/MsgSwap':
                 new_line = ','.join([str(transaction['block']),
                                      str(transaction['timestamp']),
